@@ -1,24 +1,22 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Vibrant & Bright Light EdTech Design System */
-    --color-bg-main: #f8fafc;
-    --color-bg-surface: #ffffff;
-    --color-bg-surface-hover: #f1f5f9;
-    --color-border: #e2e8f0;
-    --color-border-subtle: #f1f5f9;
-    
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-muted: #64748b;
-    
-    --color-brand-primary: #2563eb;   /* Vibrant Royal Blue */
-    --color-brand-indigo: #4f46e5;    /* Vibrant Indigo */
-    --color-brand-amber: #d97706;     /* Bright Gold */
-    --color-brand-emerald: #059669;  /* Bright Emerald */
-    --color-brand-rose: #e11d48;     /* Bright Rose */
-  }
+:root {
+  /* Vibrant & Bright Light EdTech Design System */
+  --color-bg-main: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  
+  --color-brand-primary: #2563eb;   /* Vibrant Royal Blue */
+  --color-brand-indigo: #4f46e5;    /* Vibrant Indigo */
+  --color-brand-amber: #d97706;     /* Bright Gold */
+  --color-brand-emerald: #059669;  /* Bright Emerald */
+  --color-brand-rose: #e11d48;     /* Bright Rose */
 }
 
 * {
@@ -99,6 +97,30 @@ body {
   border-radius: 20px 20px 4px 20px;
 }
 
+/* Shimmer Light Animation for Hero Buttons & Cards */
+@keyframes shimmer-move {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer-move 2.5s infinite;
+}
+
 /* Typing Cursor Animation */
 .typing-cursor::after {
   content: '▋';
@@ -141,6 +163,11 @@ body {
   to { stroke-dashoffset: -20; }
 }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .animate-slide-up {
   animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -164,6 +191,10 @@ body {
 .animate-path-dash {
   stroke-dasharray: 6 6;
   animation: path-dash 1.5s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

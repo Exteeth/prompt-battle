@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Hash, RefreshCw } from 'lucide-react';
+import { playPopSound, playMascotBlipSound } from '../lib/soundEffects';
+import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Hash, RefreshCw, Zap } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -13,6 +14,60 @@ export default function Home() {
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+
+  const canvasRef = useRef(null);
+
+  // Floating Background Particles Canvas Animation Effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particles = Array.from({ length: 30 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 3 + 1,
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5,
+      opacity: Math.random() * 0.5 + 0.2
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(37, 99, 235, ${p.opacity})`;
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
 
   // Mascot Cycling Animated Speech Messages Gimmick
   const mascotMessages = [
@@ -33,6 +88,7 @@ export default function Home() {
   }, [mascotIndex]);
 
   const triggerNextMascotMessage = () => {
+    playMascotBlipSound();
     setIsChangingMsg(true);
     setTimeout(() => {
       setMascotIndex((prev) => (prev + 1) % mascotMessages.length);
@@ -44,6 +100,7 @@ export default function Home() {
     e.preventDefault();
     setError('');
     try {
+      playPopSound();
       loginStudent(roomCode, studentId, username);
       navigate('/stages');
     } catch (err) {
@@ -55,6 +112,7 @@ export default function Home() {
     e.preventDefault();
     setError('');
     try {
+      playPopSound();
       loginTeacher(roomCode, pin);
       navigate('/teacher');
     } catch (err) {
@@ -64,6 +122,9 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 text-slate-900 flex flex-col justify-between relative overflow-hidden font-prompt">
+      {/* Background Interactive Floating Particles Canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0 opacity-70" />
+
       {/* Background Soft Floating Gradients */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none animate-float" />
       <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl pointer-events-none animate-float" />
@@ -74,12 +135,12 @@ export default function Home() {
           <img
             src="/assets/logo.webp"
             alt="Prompt Battle Logo"
-            className="w-10 h-10 object-contain drop-shadow-sm hover:scale-105 transition-transform"
+            className="w-10 h-10 object-contain drop-shadow-sm hover:scale-105 transition-transform cursor-pointer"
           />
           <div className="flex flex-col">
             <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
               <span>Prompt Battle</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
             </span>
             <span className="text-[10px] text-blue-600 font-mono tracking-wider uppercase font-semibold">
               AI Prompt Engineering Platform
@@ -89,10 +150,11 @@ export default function Home() {
 
         <button
           onClick={() => {
+            playPopSound();
             setTab(tab === 'student' ? 'teacher' : 'student');
             setError('');
           }}
-          className="min-h-[44px] px-4 py-2 rounded-2xl text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+          className="min-h-[44px] px-4 py-2 rounded-2xl text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 transition-all flex items-center gap-2 cursor-pointer shadow-xs hover:scale-105"
         >
           {tab === 'student' ? (
             <>
@@ -115,19 +177,22 @@ export default function Home() {
           {/* Interactive Mascot Animated Speech Bubble Container */}
           <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
             <div className="relative group cursor-pointer shrink-0" onClick={triggerNextMascotMessage} title="กดที่ตัว Promptie เพื่อฟังคำแนะนำใหม่!">
+              {/* Glowing Ambient Halo behind Mascot */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full blur-2xl opacity-40 animate-pulse pointer-events-none" />
+
               <img
                 src="/assets/mascot.webp"
                 alt="Promptie Mascot"
-                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl animate-mascot-pulse group-hover:scale-110 transition-transform duration-300"
+                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl animate-mascot-pulse group-hover:scale-110 transition-transform duration-300 relative z-10"
               />
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-md flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-md flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                 <RefreshCw size={10} className="animate-spin" />
                 <span>แตะที่ผมสิ!</span>
               </span>
             </div>
 
             <div className="space-y-3 flex-1 min-w-0">
-              <div className="bg-white p-4.5 rounded-3xl border border-blue-200 shadow-md text-left transition-all">
+              <div className="bg-white p-4.5 rounded-3xl border border-blue-200 shadow-md text-left transition-all relative overflow-hidden">
                 <p className={`text-xs sm:text-sm text-slate-800 font-bold leading-relaxed transition-opacity duration-200 ${isChangingMsg ? 'opacity-0' : 'opacity-100'}`}>
                   {mascotMessages[mascotIndex]}
                 </p>
@@ -146,12 +211,12 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-                <span className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold flex items-center gap-1">
+                <span className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform">
                   <BookOpen size={14} className="text-blue-600" />
                   <span>บันทึกคะแนนด้วยรหัสนักเรียน</span>
                 </span>
-                <span className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1">
-                  <Sparkles size={14} className="text-amber-600" />
+                <span className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform">
+                  <Sparkles size={14} className="text-amber-600 animate-spin-slow" />
                   <span>AI Feedback ภาษาไทย</span>
                 </span>
               </div>
@@ -184,12 +249,12 @@ export default function Home() {
 
         {/* Right Side: Entry Form Card */}
         <div className="w-full max-w-md lg:w-1/2">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-2xl space-y-6">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-2xl space-y-6 relative">
             {/* Tab Switcher */}
             <div className="grid grid-cols-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
               <button
                 type="button"
-                onClick={() => { setTab('student'); setError(''); }}
+                onClick={() => { playPopSound(); setTab('student'); setError(''); }}
                 className={`min-h-[44px] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   tab === 'student'
                     ? 'bg-blue-600 text-white shadow-md'
@@ -201,7 +266,7 @@ export default function Home() {
               </button>
               <button
                 type="button"
-                onClick={() => { setTab('teacher'); setError(''); }}
+                onClick={() => { playPopSound(); setTab('teacher'); setError(''); }}
                 className={`min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   tab === 'teacher'
                     ? 'bg-amber-500 text-white font-bold shadow-md'
@@ -268,7 +333,7 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="w-full min-h-[52px] py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="w-full min-h-[52px] py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 cursor-pointer mt-2 animate-shimmer hover:scale-[1.02] active:scale-98"
                 >
                   <span>เข้าสู่สนามฝึก Prompt Battle</span>
                   <ArrowRight size={20} />
@@ -308,7 +373,7 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="w-full min-h-[52px] py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="w-full min-h-[52px] py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer mt-2 animate-shimmer hover:scale-[1.02] active:scale-98"
                 >
                   <ShieldCheck size={20} />
                   <span>เข้าสู่ระบบ Teacher Admin</span>

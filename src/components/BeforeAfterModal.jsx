@@ -90,7 +90,7 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
             <div className="flex items-center justify-between pb-2 border-b border-blue-200 font-mono">
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1">
                 <span>Attempt ล่าสุด (#{lastAttempt.attemptNumber})</span>
-                <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-black">BEST</span>
+                <span className="text-[10px] bg-blue-600 text-white px-1.5 py-[1px] rounded font-black">BEST</span>
               </span>
               <span className="text-xs font-bold text-blue-800 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded">
                 คะแนน: {lastAttempt.totalScore} / 20

@@ -235,7 +235,7 @@ export default function StageList() {
                     }`}
                   >
                     {/* Animated Level Badge Node */}
-                    <div className={`w-13 h-13 rounded-2xl flex items-center justify-center font-black text-sm shadow-md transition-transform group-hover:scale-115 group-hover:rotate-6 ${
+                    <div className={`w-[52px] h-[52px] rounded-2xl flex items-center justify-center font-black text-sm shadow-md transition-transform group-hover:scale-115 group-hover:rotate-6 ${
                       isCleared 
                         ? 'bg-emerald-600 text-white' 
                         : isNextToPlay
