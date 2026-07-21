@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getLeaderboard } from '../lib/sessionStorage';
-import { Trophy, ArrowLeft, Crown, Medal, Award, User, Sparkles } from 'lucide-react';
+import { Trophy, ArrowLeft, Crown, Medal, Award, User, Sparkles, Search, Share2, Check } from 'lucide-react';
 
 export default function Leaderboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [copiedShare, setCopiedShare] = useState(false);
 
   if (!user) {
     navigate('/');
@@ -15,9 +17,20 @@ export default function Leaderboard() {
 
   const leaderboard = getLeaderboard(user.roomCode);
 
+  const filteredLeaderboard = leaderboard.filter(item =>
+    item.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const top1 = leaderboard[0];
   const top2 = leaderboard[1];
   const top3 = leaderboard[2];
+
+  const handleShare = () => {
+    const text = `🏆 Prompt Battle Leaderboard ห้อง ${user.roomCode}\nผู้เล่นอันดับ 1: ${top1 ? top1.username : 'ยังไม่มี'} (${top1 ? top1.totalPoints : 0} คะแนน)\nมาร่วมท้าทายกันได้เลย!`;
+    navigator.clipboard.writeText(text);
+    setCopiedShare(true);
+    setTimeout(() => setCopiedShare(false), 2000);
+  };
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 text-slate-900 flex flex-col font-prompt">
@@ -36,9 +49,13 @@ export default function Leaderboard() {
           <span className="font-bold text-xs sm:text-base">Leaderboard ห้อง <strong className="font-mono text-blue-600">{user.roomCode}</strong></span>
         </div>
 
-        <div className="text-xs text-slate-500 hidden sm:block">
-          ผู้เล่น: <strong className="text-slate-900">{user.username}</strong>
-        </div>
+        <button
+          onClick={handleShare}
+          className="min-h-[44px] px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-bold rounded-2xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+        >
+          {copiedShare ? <Check size={16} className="text-emerald-600" /> : <Share2 size={16} />}
+          <span className="hidden sm:inline">{copiedShare ? 'คัดลอกข้อความแชร์แล้ว' : 'แชร์ตารางคะแนน'}</span>
+        </button>
       </nav>
 
       {/* Main Table Content */}
@@ -107,11 +124,23 @@ export default function Leaderboard() {
           </div>
         )}
 
+        {/* Search Student Input */}
+        <div className="relative max-w-md mx-auto">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="ค้นหาชื่อผู้เล่นในห้อง..."
+            className="w-full bg-white border border-slate-300 focus:border-blue-600 text-slate-900 rounded-2xl pl-10 pr-4 py-2.5 text-xs sm:text-sm focus:outline-none transition-all shadow-xs"
+          />
+        </div>
+
         {/* Leaderboard Table */}
         <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
-          {leaderboard.length === 0 ? (
+          {filteredLeaderboard.length === 0 ? (
             <div className="p-12 text-center text-slate-500 text-sm">
-              ยังไม่มีผู้เล่นส่งผลงานในห้องนี้ เป็นคนแรกที่พิชิตด่านเลย!
+              ไม่พบผู้เล่นที่คุณค้นหา
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -122,8 +151,8 @@ export default function Leaderboard() {
                 <div className="col-span-2 text-right">คะแนนรวม</div>
               </div>
 
-              {leaderboard.map((item, index) => {
-                const rank = index + 1;
+              {filteredLeaderboard.map((item, index) => {
+                const rank = leaderboard.findIndex(l => l.userId === item.userId) + 1;
                 const isCurrentUser = item.userId === user.userId;
                 const avatarBg = isCurrentUser ? 'bg-blue-600' : 'bg-slate-200';
                 const avatarText = isCurrentUser ? 'text-white' : 'text-slate-800';

@@ -11,7 +11,8 @@ import ChatMessage from '../components/chat/ChatMessage';
 import ChatInput from '../components/chat/ChatInput';
 import StageSidebar from '../components/StageSidebar';
 import BeforeAfterModal from '../components/BeforeAfterModal';
-import { FileText, ChevronDown, ChevronUp, Cpu, Lightbulb } from 'lucide-react';
+import PromptCheatSheetModal from '../components/PromptCheatSheetModal';
+import { FileText, ChevronDown, ChevronUp, Cpu, Sparkles, BookOpen } from 'lucide-react';
 
 export default function PlayStage() {
   const { stageId } = useParams();
@@ -24,6 +25,7 @@ export default function PlayStage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
   const [showCriteriaAccordion, setShowCriteriaAccordion] = useState(true);
 
   const chatEndRef = useRef(null);
@@ -195,11 +197,14 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
                 {showCriteriaAccordion ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
 
-              {/* Mascot Mini Hint Widget */}
-              <div className="hidden sm:flex items-center gap-2 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full text-xs font-semibold text-blue-700">
-                <img src="/assets/mascot.webp" alt="Promptie" className="w-5 h-5 object-contain" />
-                <span>Promptie Tip: อ่านโจทย์แล้วใส่ Context ให้ครบ!</span>
-              </div>
+              {/* Prompt Cheat Sheet Button */}
+              <button
+                onClick={() => setIsCheatSheetOpen(true)}
+                className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <BookOpen size={13} className="text-blue-600" />
+                <span>ดูสูตรลับ Prompt</span>
+              </button>
             </div>
 
             {showCriteriaAccordion && (
@@ -254,11 +259,13 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
           </div>
         </div>
 
-        {/* Bottom ChatGPT Input Bar */}
+        {/* Bottom ChatGPT Input Bar with Starters & Hints */}
         <ChatInput
           onSubmit={handlePromptSubmit}
           isLoading={isLoading}
           attemptsLeft={attemptsLeft}
+          stageStarters={stage.starters}
+          stageHint={stage.hint}
         />
       </div>
 
@@ -267,6 +274,12 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         attempts={attempts}
         isOpen={isCompareOpen}
         onClose={() => setIsCompareOpen(false)}
+      />
+
+      {/* Prompt Cheat Sheet Master Formula Modal */}
+      <PromptCheatSheetModal
+        isOpen={isCheatSheetOpen}
+        onClose={() => setIsCheatSheetOpen(false)}
       />
     </div>
   );

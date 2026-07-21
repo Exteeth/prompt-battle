@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Layers } from 'lucide-react';
+import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Layers, MessageSquare, RefreshCw } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -12,6 +12,32 @@ export default function Home() {
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+
+  // Mascot Cycling Animated Speech Messages Gimmick
+  const mascotMessages = [
+    'สวัสดีครับ! ผม Promptie ครู AI พร้อมพานักเรียนมาสนุกกับการเรียนสั่ง AI แล้วครับ! 🤖✨',
+    'รู้ไหม? การระบุ Role, Task และ Constraint ช่วยให้ AI ทำงานได้แม่นยำขึ้น 10 เท่า! 💡',
+    'ลองเริ่มจากด่าน 0.1 ปูพื้นฐาน แล้วลุยด่านแข่งขันเพื่อเก็บสะสมคะแนน 20 เต็มกันเลย! ⭐️',
+    'คลิกตัวผมเพื่อเปลี่ยนเทคนิค Prompt พิเศษได้เรื่อยๆ เลยนะครับ! 🚀'
+  ];
+
+  const [mascotIndex, setMascotIndex] = useState(0);
+  const [isChangingMsg, setIsChangingMsg] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      triggerNextMascotMessage();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [mascotIndex]);
+
+  const triggerNextMascotMessage = () => {
+    setIsChangingMsg(true);
+    setTimeout(() => {
+      setMascotIndex((prev) => (prev + 1) % mascotMessages.length);
+      setIsChangingMsg(false);
+    }, 200);
+  };
 
   const handleStudentSubmit = (e) => {
     e.preventDefault();
@@ -37,9 +63,9 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 text-slate-900 flex flex-col justify-between relative overflow-hidden font-prompt">
-      {/* Background Soft Gradients */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl pointer-events-none" />
+      {/* Background Soft Floating Gradients */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none animate-float" />
+      <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl pointer-events-none animate-float" />
 
       {/* Top Header Navigation */}
       <header className="h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between max-w-6xl mx-auto w-full z-10 bg-white/90 backdrop-blur-md shadow-xs">
@@ -47,7 +73,7 @@ export default function Home() {
           <img
             src="/assets/logo.webp"
             alt="Prompt Battle Logo"
-            className="w-10 h-10 object-contain drop-shadow-sm"
+            className="w-10 h-10 object-contain drop-shadow-sm hover:scale-105 transition-transform"
           />
           <div className="flex flex-col">
             <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
@@ -83,21 +109,39 @@ export default function Home() {
 
       {/* Main Hero & Mascot Section */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 z-10">
-        {/* Left Side: Mascot Speech Bubble & Hero Description */}
+        {/* Left Side: Animated Mascot Speech Bubble & Hero Description */}
         <div className="w-full lg:w-1/2 space-y-6 text-center lg:text-left">
-          {/* Mascot Speech Bubble Container */}
+          {/* Interactive Mascot Animated Speech Bubble Container */}
           <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
-            <img
-              src="/assets/mascot.webp"
-              alt="Promptie Mascot"
-              className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300 shrink-0"
-            />
+            <div className="relative group cursor-pointer shrink-0" onClick={triggerNextMascotMessage} title="กดที่ตัว Promptie เพื่อฟังคำแนะนำใหม่!">
+              <img
+                src="/assets/mascot.webp"
+                alt="Promptie Mascot"
+                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl animate-mascot-pulse group-hover:scale-110 transition-transform duration-300"
+              />
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-md flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <RefreshCw size={10} className="animate-spin" />
+                <span>แตะที่ผมสิ!</span>
+              </span>
+            </div>
 
-            <div className="space-y-3">
-              <div className="bg-white p-4 rounded-3xl border border-blue-200 shadow-md text-left">
-                <p className="text-xs sm:text-sm text-slate-800 font-bold leading-relaxed">
-                  สวัสดีครับ! ผม <span className="text-blue-600 font-extrabold">Promptie</span> ครู AI ที่จะพานักเรียนมาสนุกกับการฝึกสั่ง AI อย่างมีประสิทธิภาพครับ!
+            <div className="space-y-3 flex-1 min-w-0">
+              <div className="bg-white p-4.5 rounded-3xl border border-blue-200 shadow-md text-left transition-all">
+                <p className={`text-xs sm:text-sm text-slate-800 font-bold leading-relaxed transition-opacity duration-200 ${isChangingMsg ? 'opacity-0' : 'opacity-100'}`}>
+                  {mascotMessages[mascotIndex]}
                 </p>
+
+                {/* Animated Dots indicator */}
+                <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-100">
+                  {mascotMessages.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        i === mascotIndex ? 'w-5 bg-blue-600' : 'w-1.5 bg-slate-200'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-2">

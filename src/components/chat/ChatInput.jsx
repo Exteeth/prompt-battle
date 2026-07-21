@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowUp, Loader2, Sparkles } from 'lucide-react';
+import { ArrowUp, Loader2, Sparkles, Wand2, Lightbulb } from 'lucide-react';
 
-export default function ChatInput({ onSubmit, isLoading, attemptsLeft }) {
+export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStarters, stageHint }) {
   const [prompt, setPrompt] = useState('');
+  const [showStarters, setShowStarters] = useState(false);
   const textareaRef = useRef(null);
 
   // Auto-resize textarea as user types
@@ -30,9 +31,57 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft }) {
     }
   };
 
+  const applyStarter = (text) => {
+    setPrompt(text);
+    setShowStarters(false);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   return (
     <div className="w-full bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:p-4 sticky bottom-0 z-10 shadow-lg">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-2">
+        {/* Starter Templates Drawer / Pills */}
+        {stageStarters && stageStarters.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setShowStarters(!showStarters)}
+              className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold flex items-center gap-1.5 hover:bg-blue-100 transition-colors shrink-0 cursor-pointer"
+            >
+              <Wand2 size={13} className="text-blue-600" />
+              <span>ตัวช่วยคิด Prompt ({stageStarters.length})</span>
+            </button>
+
+            {stageHint && (
+              <span className="text-[11px] text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1 shrink-0 font-medium">
+                <Lightbulb size={12} className="text-amber-600" />
+                <span>{stageHint}</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Expandable Starter Options */}
+        {showStarters && stageStarters && (
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 animate-slide-up">
+            <span className="text-[11px] font-bold text-slate-600 block">เลือกตัวอย่างโครงสร้างคำสั่งเพื่อเริ่มเขียน:</span>
+            <div className="space-y-1.5">
+              {stageStarters.map((starter, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => applyStarter(starter)}
+                  className="w-full text-left text-xs p-2.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-900 font-medium transition-all font-sans cursor-pointer block leading-relaxed"
+                >
+                  💡 {starter}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="relative">
           <div className="relative flex items-end bg-slate-50 rounded-2xl border border-slate-300 focus-within:border-blue-600 focus-within:bg-white focus-within:ring-1 focus-within:ring-blue-600 transition-all shadow-sm">
             <textarea
