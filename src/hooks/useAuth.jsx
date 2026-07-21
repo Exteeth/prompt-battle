@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, loginStudent, loginTeacher, logout as logoutSession, initDefaultData } from '../lib/sessionStorage';
+import { 
+  getCurrentUser, 
+  loginStudent as apiLoginStudent, 
+  loginTeacher as apiLoginTeacher, 
+  logout as apiLogout 
+} from '../lib/sessionStorage';
 
 const AuthContext = createContext(null);
 
@@ -8,36 +13,39 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initDefaultData();
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
+    const session = getCurrentUser();
+    setUser(session);
     setLoading(false);
   }, []);
 
-  const handleStudentLogin = (roomCode, username) => {
-    const session = loginStudent(roomCode, username);
+  const loginStudent = (roomCode, studentId, username) => {
+    const session = apiLoginStudent(roomCode, studentId, username);
     setUser(session);
     return session;
   };
 
-  const handleTeacherLogin = (roomCode, pin) => {
-    const session = loginTeacher(roomCode, pin);
+  const loginTeacher = (roomCode, pin) => {
+    const session = apiLoginTeacher(roomCode, pin);
     setUser(session);
     return session;
   };
 
-  const handleLogout = () => {
-    logoutSession();
+  const logout = () => {
+    apiLogout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginStudent: handleStudentLogin, loginTeacher: handleTeacherLogin, logout: handleLogout }}>
+    <AuthContext.Provider value={{ user, loading, loginStudent, loginTeacher, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

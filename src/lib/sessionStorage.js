@@ -1,5 +1,5 @@
 // 💾 LOCAL & SUPABASE SESSION & DATA STORAGE MANAGEMENT
-// Supports offline-first Kahoot-style room codes and instant session storage
+// Supports offline-first Kahoot-style room codes with Student ID persistent session restoration
 
 const SESSION_KEY = 'prompt_battle_session';
 const ATTEMPTS_KEY = 'prompt_battle_attempts';
@@ -19,7 +19,7 @@ export function initDefaultData() {
 // ----------------------------------------------------
 // 1. AUTH & SESSION MANAGEMENT
 // ----------------------------------------------------
-export function loginStudent(roomCode, username) {
+export function loginStudent(roomCode, studentId, username) {
   initDefaultData();
   const rooms = JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]');
   const room = rooms.find(r => r.code.toUpperCase() === roomCode.trim().toUpperCase());
@@ -28,12 +28,20 @@ export function loginStudent(roomCode, username) {
     throw new Error(`ไม่พบรหัสห้องเรียน "${roomCode}" กรุณาตรวจสอบรหัสห้องอีกครั้ง`);
   }
 
+  if (!studentId || studentId.trim().length === 0) {
+    throw new Error('กรุณากรอกรหัสนักเรียน/เลขประจำตัว');
+  }
+
   if (!username || username.trim().length < 2) {
     throw new Error('กรุณากรอกชื่อเล่นอย่างน้อย 2 ตัวอักษร');
   }
 
+  const cleanStudentId = studentId.trim().toUpperCase();
+  const userId = `usr_${room.code}_${cleanStudentId}`;
+
   const session = {
-    userId: 'usr_' + Math.random().toString(36).substr(2, 9),
+    userId,
+    studentId: cleanStudentId,
     username: username.trim(),
     roomCode: room.code,
     roomName: room.name,
@@ -97,6 +105,7 @@ export function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores
     id: 'att_' + Math.random().toString(36).substr(2, 9),
     roomCode: user.roomCode,
     userId: user.userId,
+    studentId: user.studentId || '',
     username: user.username,
     stageId,
     stageNumber,
@@ -129,7 +138,7 @@ export function getAllUserAttempts() {
 }
 
 // ----------------------------------------------------
-// 3. LEADERBOARD & TEACHER ANALYTICS
+// 3. LEADERBOARD & TEACHER ANALYTICS & ACHIEVEMENTS
 // ----------------------------------------------------
 export function getLeaderboard(roomCode) {
   const all = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
@@ -141,6 +150,7 @@ export function getLeaderboard(roomCode) {
     if (!userMap[att.userId]) {
       userMap[att.userId] = {
         userId: att.userId,
+        studentId: att.studentId || '',
         username: att.username,
         stages: {},
         totalPoints: 0
@@ -159,6 +169,7 @@ export function getLeaderboard(roomCode) {
     const totalPoints = stageScores.reduce((sum, score) => sum + score, 0);
     return {
       userId: u.userId,
+      studentId: u.studentId,
       username: u.username,
       stagesCompleted: stageScores.length,
       totalPoints
@@ -166,6 +177,55 @@ export function getLeaderboard(roomCode) {
   });
 
   return leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+}
+
+export function getUserAchievements() {
+  const user = getCurrentUser();
+  if (!user || user.role !== 'student') return [];
+
+  const userAttempts = getAllUserAttempts();
+  const leaderboard = getLeaderboard(user.roomCode);
+  const userRankIndex = leaderboard.findIndex(l => l.userId === user.userId);
+
+  const hasPassedStage1 = userAttempts.some(a => a.stageId === 1 && a.totalScore >= 12);
+  const hasHighScore = userAttempts.some(a => a.totalScore >= 16);
+  const completedStagesCount = new Set(userAttempts.filter(a => a.totalScore >= 12).map(a => a.stageId)).size;
+  const isTop3 = userRankIndex >= 0 && userRankIndex < 3;
+
+  return [
+    {
+      id: 'pioneer',
+      title: 'Prompt Pioneer',
+      label: 'นักสั่งรุ่นแรก',
+      desc: 'พิชิตด่าน 0.1 ปูพื้นฐานสำเร็จ',
+      icon: '🚀',
+      unlocked: hasPassedStage1
+    },
+    {
+      id: 'highscore',
+      title: 'High Scorer',
+      label: 'จอมสั่งอัจฉริยะ',
+      desc: 'ทำคะแนนได้ 16/20 คะแนนขึ้นไปในด่านใดด่านหนึ่ง',
+      icon: '⚡️',
+      unlocked: hasHighScore
+    },
+    {
+      id: 'master',
+      title: 'Master Prompter',
+      label: 'ปรมาจารย์ Prompt',
+      desc: 'ผ่านด่านการเรียนรู้สะสมครบ 5 ด่านขึ้นไป',
+      icon: '🏆',
+      unlocked: completedStagesCount >= 5
+    },
+    {
+      id: 'champion',
+      title: 'Hall of Famer',
+      label: 'แชมเปียนชั้นเรียน',
+      desc: 'ก้าวขึ้นสู่อันดับ Top 3 ใน Leaderboard ของห้องเรียน',
+      icon: '🥇',
+      unlocked: isTop3
+    }
+  ];
 }
 
 export function getTeacherAnalytics(roomCode) {
@@ -208,4 +268,49 @@ export function getTeacherAnalytics(roomCode) {
     avgQuality: (s.qualitySum / s.count).toFixed(1),
     avgTotalScore: (s.totalScoreSum / s.count).toFixed(1)
   }));
+}
+
+export function getStudentDetailedScores(roomCode) {
+  const all = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
+  const roomAttempts = all.filter(a => a.roomCode === roomCode);
+
+  const studentMap = {};
+  roomAttempts.forEach(att => {
+    if (!studentMap[att.userId]) {
+      studentMap[att.userId] = {
+        userId: att.userId,
+        studentId: att.studentId || '',
+        username: att.username,
+        stages: {},
+        attempts: []
+      };
+    }
+
+    const s = studentMap[att.userId];
+    s.attempts.push(att);
+
+    // Keep highest attempt score per stage
+    if (!s.stages[att.stageId] || att.totalScore > s.stages[att.stageId].totalScore) {
+      s.stages[att.stageId] = {
+        totalScore: att.totalScore,
+        scores: att.scores,
+        stageNumber: att.stageNumber
+      };
+    }
+  });
+
+  return Object.values(studentMap).map(student => {
+    const stageValues = Object.values(student.stages);
+    const totalPoints = stageValues.reduce((sum, item) => sum + item.totalScore, 0);
+
+    return {
+      userId: student.userId,
+      studentId: student.studentId,
+      username: student.username,
+      stagesCompleted: stageValues.length,
+      totalPoints,
+      stages: student.stages,
+      attempts: student.attempts
+    };
+  }).sort((a, b) => b.totalPoints - a.totalPoints);
 }

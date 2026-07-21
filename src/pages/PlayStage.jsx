@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { STAGES_DATA } from '../data/stagesData';
 import { evaluatePrompt } from '../lib/evaluatorEngine';
 import { saveAttempt, getUserStageAttempts } from '../lib/sessionStorage';
+import { playVictoryChime, playPopSound } from '../lib/soundEffects';
 
 import ChatHeader from '../components/chat/ChatHeader';
 import ChatMessage from '../components/chat/ChatMessage';
@@ -12,7 +13,7 @@ import ChatInput from '../components/chat/ChatInput';
 import StageSidebar from '../components/StageSidebar';
 import BeforeAfterModal from '../components/BeforeAfterModal';
 import PromptCheatSheetModal from '../components/PromptCheatSheetModal';
-import { FileText, ChevronDown, ChevronUp, Cpu, Sparkles, BookOpen } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, Cpu, BookOpen } from 'lucide-react';
 
 export default function PlayStage() {
   const { stageId } = useParams();
@@ -98,6 +99,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
       return;
     }
 
+    playPopSound();
     setIsLoading(true);
 
     // Add user message to UI immediately
@@ -141,8 +143,9 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         }
       ]);
 
-      // Confetti celebration if high score!
-      if (result.totalScore >= 16) {
+      // Victory chime & Confetti celebration if high score!
+      if (result.totalScore >= 14) {
+        playVictoryChime();
         confetti({
           particleCount: 80,
           spread: 70,
@@ -179,8 +182,8 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
           stage={stage}
           attemptsLeft={attemptsLeft}
           maxScore={maxScore}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onOpenCompare={() => setIsCompareOpen(true)}
+          onToggleSidebar={() => { playPopSound(); setIsSidebarOpen(!isSidebarOpen); }}
+          onOpenCompare={() => { playPopSound(); setIsCompareOpen(true); }}
           hasMultipleAttempts={attempts.length >= 2}
         />
 
@@ -199,7 +202,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
 
               {/* Prompt Cheat Sheet Button */}
               <button
-                onClick={() => setIsCheatSheetOpen(true)}
+                onClick={() => { playPopSound(); setIsCheatSheetOpen(true); }}
                 className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
               >
                 <BookOpen size={13} className="text-blue-600" />

@@ -9,16 +9,21 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
   const scoreGrowth = (lastAttempt.totalScore - firstAttempt.totalScore).toFixed(1);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="growth-modal-title"
+      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in font-prompt"
+    >
       <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold">
-              <TrendingUp size={20} />
+              <TrendingUp size={20} aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h2 id="growth-modal-title" className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                 วิเคราะห์พัฒนาการ (Growth Comparison)
               </h2>
               <p className="text-xs text-slate-500">เปรียบเทียบ Prompt และผลลัพธ์ระหว่าง Attempt ครั้งแรก vs ครั้งล่าสุด</p>
@@ -27,21 +32,22 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+            aria-label="ปิดหน้าต่างวิเคราะห์พัฒนาการ"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         {/* Growth Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <Sparkles size={18} />
+            <Sparkles size={18} aria-hidden="true" />
             <span className="text-sm font-semibold">อัตราการเติบโตทางทักษะของคุณ:</span>
           </div>
           <div className="flex items-center gap-2 font-mono">
             <span className="text-sm text-blue-100">{firstAttempt.totalScore} คะแนน</span>
-            <ArrowRight size={16} />
+            <ArrowRight size={16} aria-hidden="true" />
             <span className="text-lg font-black">{lastAttempt.totalScore} คะแนน</span>
             <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ml-2 ${
               scoreGrowth >= 0 ? 'bg-white text-blue-700' : 'bg-rose-100 text-rose-700'

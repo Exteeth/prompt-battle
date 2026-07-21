@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Layers, MessageSquare, RefreshCw } from 'lucide-react';
+import { Sparkles, ShieldCheck, ArrowRight, GraduationCap, KeyRound, UserCheck, Lock, BookOpen, Hash, RefreshCw } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function Home() {
 
   const [tab, setTab] = useState('student'); // 'student' | 'teacher'
   const [roomCode, setRoomCode] = useState('PROMPT-101');
+  const [studentId, setStudentId] = useState('');
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ export default function Home() {
   // Mascot Cycling Animated Speech Messages Gimmick
   const mascotMessages = [
     'สวัสดีครับ! ผม Promptie ครู AI พร้อมพานักเรียนมาสนุกกับการเรียนสั่ง AI แล้วครับ! 🤖✨',
-    'รู้ไหม? การระบุ Role, Task และ Constraint ช่วยให้ AI ทำงานได้แม่นยำขึ้น 10 เท่า! 💡',
+    'รู้ไหม? กรอกรหัสนักเรียนเดิม จะกู้คืนคะแนนและประวัติการเล่นเดิมได้ 100% เลยนะ! 💡',
     'ลองเริ่มจากด่าน 0.1 ปูพื้นฐาน แล้วลุยด่านแข่งขันเพื่อเก็บสะสมคะแนน 20 เต็มกันเลย! ⭐️',
     'คลิกตัวผมเพื่อเปลี่ยนเทคนิค Prompt พิเศษได้เรื่อยๆ เลยนะครับ! 🚀'
   ];
@@ -43,7 +44,7 @@ export default function Home() {
     e.preventDefault();
     setError('');
     try {
-      loginStudent(roomCode, username);
+      loginStudent(roomCode, studentId, username);
       navigate('/stages');
     } catch (err) {
       setError(err.message);
@@ -147,7 +148,7 @@ export default function Home() {
               <div className="flex flex-wrap justify-center lg:justify-start gap-2">
                 <span className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold flex items-center gap-1">
                   <BookOpen size={14} className="text-blue-600" />
-                  <span>เรียนง่าย ได้ผลจริง</span>
+                  <span>บันทึกคะแนนด้วยรหัสนักเรียน</span>
                 </span>
                 <span className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1">
                   <Sparkles size={14} className="text-amber-600" />
@@ -165,7 +166,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
-              ฝึกเขียนและปรับปรุงคำสั่งกับ AI สไตล์ Chatbot รับคะแนนประเมิน 4 ด้านและคำแนะนำรายบุคคลเพื่อเพิ่มพูนความรู้
+              ฝึกเขียนและปรับปรุงคำสั่งกับ AI สไตล์ Chatbot ระบบจดจำประวัติการเล่นและคะแนนเดิมด้วยรหัสนักเรียน
             </p>
           </div>
 
@@ -231,6 +232,21 @@ export default function Home() {
                     value={roomCode}
                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     placeholder="เช่น PROMPT-101"
+                    className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
+                    <Hash size={14} className="text-blue-600" />
+                    <span>รหัสนักเรียน / เลขประจำตัว</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    placeholder="เช่น 6401 หรือ 12345 (เพื่อจำคะแนนเดิม)"
                     className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[44px]"
                   />
                 </div>
