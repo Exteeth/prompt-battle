@@ -97,6 +97,31 @@ body {
   border-radius: 20px 20px 4px 20px;
 }
 
+/* 3D RPG Pedestal & Map Node Shadow Utility */
+.pedestal-3d {
+  box-shadow: 0 8px 0 0 #cbd5e1, 0 16px 24px -4px rgba(15, 23, 42, 0.12);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pedestal-3d:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 0 0 #94a3b8, 0 20px 30px -4px rgba(37, 99, 235, 0.2);
+}
+.pedestal-3d:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 0 #cbd5e1, 0 8px 12px -2px rgba(15, 23, 42, 0.1);
+}
+
+.pedestal-3d-cleared {
+  box-shadow: 0 8px 0 0 #6ee7b7, 0 16px 24px -4px rgba(5, 150, 105, 0.16);
+}
+.pedestal-3d-cleared:hover {
+  box-shadow: 0 12px 0 0 #34d399, 0 20px 30px -4px rgba(5, 150, 105, 0.25);
+}
+
+.pedestal-3d-active {
+  box-shadow: 0 8px 0 0 #3b82f6, 0 16px 24px -4px rgba(37, 99, 235, 0.3);
+}
+
 /* Shimmer Light Animation for Hero Buttons & Cards */
 @keyframes shimmer-move {
   0% { transform: translateX(-100%); }
@@ -119,6 +144,17 @@ body {
   );
   transform: translateX(-100%);
   animation: shimmer-move 2.5s infinite;
+}
+
+/* Laser Scanline Motion Animation for Video Player */
+@keyframes scanline-sweep {
+  0% { top: 0%; opacity: 0.8; }
+  50% { opacity: 0.3; }
+  100% { top: 100%; opacity: 0.8; }
+}
+
+.animate-scanline {
+  animation: scanline-sweep 3s linear infinite;
 }
 
 /* Typing Cursor Animation */
@@ -156,7 +192,7 @@ body {
 
 @keyframes ring-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+  50% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
 }
 
 @keyframes path-dash {
