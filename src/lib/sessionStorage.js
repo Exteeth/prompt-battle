@@ -1,10 +1,8 @@
-import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { sql as neonSql, isNeonConfigured } from './neonClient';
 
 const SESSION_KEY = 'prompt_battle_session';
 const ATTEMPTS_KEY = 'prompt_battle_attempts';
 const ROOMS_KEY = 'prompt_battle_rooms';
-const BACKEND_SYNCED_KEY = 'prompt_battle_backend_synced';
 
 // Initialize default room data
 export function initDefaultData() {
@@ -50,9 +48,9 @@ async function ensureNeonTables() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `;
-    console.log('✅ Neon backend tables verified');
+    console.log('✅ Neon backend tables ready');
   } catch (err) {
-    console.warn('⚠️ Neon table creation notice:', err.message);
+    console.warn('⚠️ Neon table creation:', err.message);
   }
 }
 
@@ -124,45 +122,30 @@ export async function loginStudent(roomCode, studentId, username) {
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
-  // Ensure Neon tables exist, then sync profile
+  // Ensure Neon tables exist
   await ensureNeonTables();
 
-  // Sync profile to Supabase in background if configured
-  if (isSupabaseConfigured && supabase) {
-    supabase.from('profiles').upsert({
-      room_code: room.code,
-      username: username.trim(),
-      role: 'student'
-    }, { onConflict: 'room_code,username' }).then(({ error }) => {
-      if (error) console.warn('Supabase profile sync notice:', error.message);
-    }).catch(() => {});
-  }
-
-  // Sync profile to Neon in background if configured
+  // Sync profile to Neon
   if (isNeonConfigured && neonSql) {
     neonSql`
       INSERT INTO profiles (room_code, username, role)
       VALUES (${room.code}, ${username.trim()}, 'student')
       ON CONFLICT (room_code, username) DO NOTHING
-    `.catch((err) => console.warn('Neon profile sync notice:', err.message));
+    `.catch((err) => console.warn('Neon profile sync:', err.message));
   }
 
-  // 🔥 CRITICAL FIX: Fetch & merge room attempts from Neon into localStorage
-  const alreadySynced = localStorage.getItem(BACKEND_SYNCED_KEY + '_' + room.code);
-  if (!alreadySynced && isNeonConfigured && neonSql) {
+  // 🔥 Fetch ALL attempts for this room from Neon & merge into localStorage
+  if (isNeonConfigured && neonSql) {
     try {
       const neonAttempts = await fetchRoomAttemptsFromNeon(room.code);
       if (neonAttempts.length > 0) {
         const existingAttempts = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
-        // Merge: keep localStorage + Neon (avoid duplicates by checking id patterns)
         const existingIds = new Set(existingAttempts.map(a => a.id));
         const newFromNeon = neonAttempts.filter(a => !existingIds.has(a.id));
         const merged = [...existingAttempts, ...newFromNeon];
         localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(merged));
-        console.log(`📡 Synced ${newFromNeon.length} attempts from Neon backend for room ${room.code}`);
+        console.log(`📡 Pulled ${newFromNeon.length} attempts from Neon for room ${room.code} (total: ${merged.length})`);
       }
-      // Mark as synced so we don't re-fetch every login
-      localStorage.setItem(BACKEND_SYNCED_KEY + '_' + room.code, 'true');
     } catch (err) {
       console.warn('⚠️ Neon fetch on login:', err.message);
     }
@@ -203,11 +186,6 @@ export function getCurrentUser() {
 }
 
 export function logout() {
-  // Clear sync flag so next login re-fetches from backend
-  const user = getCurrentUser();
-  if (user) {
-    localStorage.removeItem(BACKEND_SYNCED_KEY + '_' + user.roomCode);
-  }
   localStorage.removeItem(SESSION_KEY);
 }
 
@@ -220,7 +198,6 @@ export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, 
 
   const allAttempts = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
   
-  // Calculate current attempt number for this stage
   const userStageAttempts = allAttempts.filter(a => a.userId === user.userId && a.stageId === stageId);
   const attemptNumber = userStageAttempts.length + 1;
 
@@ -244,42 +221,31 @@ export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, 
   allAttempts.push(newAttempt);
   localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(allAttempts));
 
-  // Sync attempt record to Supabase backend table in background if configured
-  if (isSupabaseConfigured && supabase) {
-    supabase.from('attempts').insert({
-      room_code: user.roomCode,
-      username: user.username,
-      stage_id: stageId,
-      attempt_number: attemptNumber,
-      prompt_text: promptText,
-      ai_output: aiOutput,
-      scores,
-      feedback,
-      total_score: totalScore
-    }).then(({ error }) => {
-      if (error) console.warn('Supabase attempt sync notice:', error.message);
-    }).catch(() => {});
-  }
-
-  // 🔥 Sync attempt to Neon backend in background
+  // 🔥 Sync to Neon backend
   if (isNeonConfigured && neonSql) {
     await ensureNeonTables();
-    neonSql`
-      INSERT INTO attempts (room_code, username, student_id, stage_id, stage_number, attempt_number, prompt_text, ai_output, scores, feedback, total_score)
-      VALUES (
-        ${user.roomCode}, 
-        ${user.username},
-        ${user.studentId || ''},
-        ${stageId}, 
-        ${stageNumber || ''},
-        ${attemptNumber}, 
-        ${promptText}, 
-        ${aiOutput}, 
-        ${JSON.stringify(scores)}, 
-        ${JSON.stringify(feedback)}, 
-        ${totalScore}
-      )
-    `.catch((err) => console.warn('Neon attempt sync notice:', err.message));
+    try {
+      const result = await neonSql`
+        INSERT INTO attempts (room_code, username, student_id, stage_id, stage_number, attempt_number, prompt_text, ai_output, scores, feedback, total_score)
+        VALUES (
+          ${user.roomCode}, 
+          ${user.username},
+          ${user.studentId || ''},
+          ${stageId}, 
+          ${stageNumber || ''},
+          ${attemptNumber}, 
+          ${promptText}, 
+          ${aiOutput}, 
+          ${JSON.stringify(scores)}, 
+          ${JSON.stringify(feedback)}, 
+          ${totalScore}
+        )
+        RETURNING id
+      `;
+      console.log(`📤 Saved attempt to Neon (id: ${result[0]?.id})`);
+    } catch (err) {
+      console.warn('Neon attempt sync:', err.message);
+    }
   }
 
   return newAttempt;
@@ -300,13 +266,12 @@ export function getAllUserAttempts() {
 }
 
 // ----------------------------------------------------
-// 3. LEADERBOARD & TEACHER ANALYTICS & ACHIEVEMENTS
+// 3. LEADERBOARD & ACHIEVEMENTS
 // ----------------------------------------------------
 export function getLeaderboard(roomCode) {
   const all = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
   const roomAttempts = all.filter(a => a.roomCode === roomCode);
 
-  // Group by user
   const userMap = {};
   roomAttempts.forEach(att => {
     if (!userMap[att.userId]) {
@@ -319,13 +284,11 @@ export function getLeaderboard(roomCode) {
       };
     }
 
-    // Keep highest score for each stage
     if (!userMap[att.userId].stages[att.stageId] || att.totalScore > userMap[att.userId].stages[att.stageId]) {
       userMap[att.userId].stages[att.stageId] = att.totalScore;
     }
   });
 
-  // Calculate total points
   const leaderboard = Object.values(userMap).map(u => {
     const stageScores = Object.values(u.stages);
     const totalPoints = stageScores.reduce((sum, score) => sum + score, 0);
@@ -355,38 +318,10 @@ export function getUserAchievements() {
   const isTop3 = userRankIndex >= 0 && userRankIndex < 3;
 
   return [
-    {
-      id: 'pioneer',
-      title: 'Prompt Pioneer',
-      label: 'นักสั่งรุ่นแรก',
-      desc: 'พิชิตด่าน 0.1 ปูพื้นฐานสำเร็จ',
-      icon: '🚀',
-      unlocked: hasPassedStage1
-    },
-    {
-      id: 'highscore',
-      title: 'High Scorer',
-      label: 'จอมสั่งอัจฉริยะ',
-      desc: 'ทำคะแนนได้ 16/20 คะแนนขึ้นไปในด่านใดด่านหนึ่ง',
-      icon: '⚡️',
-      unlocked: hasHighScore
-    },
-    {
-      id: 'master',
-      title: 'Master Prompter',
-      label: 'ปรมาจารย์ Prompt',
-      desc: 'ผ่านด่านการเรียนรู้สะสมครบ 5 ด่านขึ้นไป',
-      icon: '🏆',
-      unlocked: completedStagesCount >= 5
-    },
-    {
-      id: 'champion',
-      title: 'Hall of Famer',
-      label: 'แชมเปียนชั้นเรียน',
-      desc: 'ก้าวขึ้นสู่อันดับ Top 3 ใน Leaderboard ของห้องเรียน',
-      icon: '🥇',
-      unlocked: isTop3
-    }
+    { id: 'pioneer', title: 'Prompt Pioneer', label: 'นักสั่งรุ่นแรก', desc: 'พิชิตด่าน 0.1 ปูพื้นฐานสำเร็จ', icon: '🚀', unlocked: hasPassedStage1 },
+    { id: 'highscore', title: 'High Scorer', label: 'จอมสั่งอัจฉริยะ', desc: 'ทำคะแนนได้ 16/20 คะแนนขึ้นไปในด่านใดด่านหนึ่ง', icon: '⚡️', unlocked: hasHighScore },
+    { id: 'master', title: 'Master Prompter', label: 'ปรมาจารย์ Prompt', desc: 'ผ่านด่านการเรียนรู้สะสมครบ 5 ด่านขึ้นไป', icon: '🏆', unlocked: completedStagesCount >= 5 },
+    { id: 'champion', title: 'Hall of Famer', label: 'แชมเปียนชั้นเรียน', desc: 'ก้าวขึ้นสู่อันดับ Top 3 ใน Leaderboard ของห้องเรียน', icon: '🥇', unlocked: isTop3 }
   ];
 }
 
@@ -397,19 +332,8 @@ export function getTeacherAnalytics(roomCode) {
   const stageMap = {};
   roomAttempts.forEach(att => {
     if (!stageMap[att.stageId]) {
-      stageMap[att.stageId] = {
-        stageId: att.stageId,
-        stageNumber: att.stageNumber,
-        count: 0,
-        claritySum: 0,
-        completenessSum: 0,
-        techniqueSum: 0,
-        qualitySum: 0,
-        totalScoreSum: 0,
-        students: new Set()
-      };
+      stageMap[att.stageId] = { stageId: att.stageId, stageNumber: att.stageNumber, count: 0, claritySum: 0, completenessSum: 0, techniqueSum: 0, qualitySum: 0, totalScoreSum: 0, students: new Set() };
     }
-
     const s = stageMap[att.stageId];
     s.count += 1;
     s.claritySum += att.scores.clarity;
@@ -421,13 +345,9 @@ export function getTeacherAnalytics(roomCode) {
   });
 
   return Object.values(stageMap).map(s => ({
-    stageId: s.stageId,
-    stageNumber: s.stageNumber,
-    studentCount: s.students.size,
-    avgClarity: (s.claritySum / s.count).toFixed(1),
-    avgCompleteness: (s.completenessSum / s.count).toFixed(1),
-    avgTechnique: (s.techniqueSum / s.count).toFixed(1),
-    avgQuality: (s.qualitySum / s.count).toFixed(1),
+    stageId: s.stageId, stageNumber: s.stageNumber, studentCount: s.students.size,
+    avgClarity: (s.claritySum / s.count).toFixed(1), avgCompleteness: (s.completenessSum / s.count).toFixed(1),
+    avgTechnique: (s.techniqueSum / s.count).toFixed(1), avgQuality: (s.qualitySum / s.count).toFixed(1),
     avgTotalScore: (s.totalScoreSum / s.count).toFixed(1)
   }));
 }
@@ -439,40 +359,18 @@ export function getStudentDetailedScores(roomCode) {
   const studentMap = {};
   roomAttempts.forEach(att => {
     if (!studentMap[att.userId]) {
-      studentMap[att.userId] = {
-        userId: att.userId,
-        studentId: att.studentId || '',
-        username: att.username,
-        stages: {},
-        attempts: []
-      };
+      studentMap[att.userId] = { userId: att.userId, studentId: att.studentId || '', username: att.username, stages: {}, attempts: [] };
     }
-
     const s = studentMap[att.userId];
     s.attempts.push(att);
-
-    // Keep highest attempt score per stage
     if (!s.stages[att.stageId] || att.totalScore > s.stages[att.stageId].totalScore) {
-      s.stages[att.stageId] = {
-        totalScore: att.totalScore,
-        scores: att.scores,
-        stageNumber: att.stageNumber
-      };
+      s.stages[att.stageId] = { totalScore: att.totalScore, scores: att.scores, stageNumber: att.stageNumber };
     }
   });
 
   return Object.values(studentMap).map(student => {
     const stageValues = Object.values(student.stages);
     const totalPoints = stageValues.reduce((sum, item) => sum + item.totalScore, 0);
-
-    return {
-      userId: student.userId,
-      studentId: student.studentId,
-      username: student.username,
-      stagesCompleted: stageValues.length,
-      totalPoints,
-      stages: student.stages,
-      attempts: student.attempts
-    };
+    return { userId: student.userId, studentId: student.studentId, username: student.username, stagesCompleted: stageValues.length, totalPoints, stages: student.stages, attempts: student.attempts };
   }).sort((a, b) => b.totalPoints - a.totalPoints);
 }
