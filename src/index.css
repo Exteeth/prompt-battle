@@ -24,11 +24,35 @@
 }
 
 body {
-  font-family: 'Prompt', 'Outfit', system-ui, -apple-system, sans-serif;
+  font-family: 'Prompt', 'Kanit', 'Outfit', system-ui, -apple-system, sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
   min-height: 100vh;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Utility Classes */
+.font-prompt {
+  font-family: 'Prompt', sans-serif;
+}
+
+.font-kanit {
+  font-family: 'Kanit', 'Prompt', sans-serif;
+}
+
+.font-outfit {
+  font-family: 'Outfit', 'Prompt', sans-serif;
+}
+
+.font-mono {
+  font-family: 'Fira Code', monospace;
+}
+
+/* Headings default to Kanit */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Kanit', 'Prompt', sans-serif;
   letter-spacing: -0.01em;
 }
 

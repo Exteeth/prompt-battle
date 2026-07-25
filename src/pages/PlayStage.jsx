@@ -242,17 +242,26 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
               />
             ))}
 
+            {/* Enhanced Thinking Indicator with staggered bouncing dots */}
             {isLoading && (
-              <div className="py-5 px-3 sm:px-6 bg-slate-100/60 border-y border-slate-200">
+              <div className="py-5 px-3 sm:px-6 bg-slate-100/60 border-y border-slate-200 animate-fade-in">
                 <div className="max-w-4xl mx-auto flex gap-3 sm:gap-4 items-center">
-                  <img
-                    src="/assets/logo.webp"
-                    alt="PromptGPT"
-                    className="w-8 h-8 rounded-full border border-blue-200 object-cover shrink-0"
-                  />
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-700 font-semibold">
+                  <div className="relative shrink-0">
+                    <img
+                      src="/assets/logo.webp"
+                      alt="Promptie กำลังคิด"
+                      className="w-9 h-9 rounded-full border-2 border-blue-200 object-contain animate-pulse"
+                    />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm" />
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-blue-700 font-semibold min-w-0">
                     <Cpu size={16} className="animate-spin text-blue-600 shrink-0" />
-                    <span className="typing-cursor">Promptie กำลังประมวลผลคำสั่งของคุณและให้คะแนน 4 ด้าน</span>
+                    <span className="truncate">Promptie กำลังประมวลผลคำสั่งของคุณ</span>
+                    <span className="flex items-center gap-1 shrink-0 ml-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" style={{ animationDelay: '200ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" style={{ animationDelay: '400ms' }} />
+                    </span>
                   </div>
                 </div>
               </div>

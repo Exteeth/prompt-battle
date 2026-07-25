@@ -46,7 +46,7 @@ export default function FeedbackCard({ scores, totalScore, feedback, attemptNumb
         </div>
       </div>
 
-      {/* 4 Criteria Progress Bars */}
+      {/* 4 Criteria Progress Bars with dynamic color by score */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1">
         <ScoreBar label="ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
         <ScoreBar label="ความครบถ้วน (Completeness)" score={scores.completeness} max={5} />
@@ -92,16 +92,27 @@ export default function FeedbackCard({ scores, totalScore, feedback, attemptNumb
 
 function ScoreBar({ label, score, max }) {
   const percentage = (score / max) * 100;
-  
+  // Dynamic bar/tint color by score tier: ≥80% emerald, 60–79% amber, <60% rose
+  const barColor = percentage >= 80
+    ? 'bg-emerald-500'
+    : percentage >= 60
+    ? 'bg-amber-500'
+    : 'bg-rose-500';
+  const scoreColor = percentage >= 80
+    ? 'text-emerald-700'
+    : percentage >= 60
+    ? 'text-amber-700'
+    : 'text-rose-700';
+
   return (
     <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
       <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1.5 font-mono">
         <span>{label}</span>
-        <span className="font-bold text-blue-600">{score} / {max}</span>
+        <span className={`font-bold ${scoreColor}`}>{score} / {max}</span>
       </div>
       <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
+          className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { X, TrendingUp, Sparkles, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 
 export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
   if (!isOpen || !attempts || attempts.length < 2) return null;
@@ -7,6 +7,7 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
   const firstAttempt = attempts[0];
   const lastAttempt = attempts[attempts.length - 1];
   const scoreGrowth = (lastAttempt.totalScore - firstAttempt.totalScore).toFixed(1);
+  const isPositiveGrowth = parseFloat(scoreGrowth) >= 0;
 
   return (
     <div
@@ -39,7 +40,7 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Growth Banner */}
+        {/* Growth Banner with animated badge */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Sparkles size={18} aria-hidden="true" />
@@ -49,10 +50,15 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
             <span className="text-sm text-blue-100">{firstAttempt.totalScore} คะแนน</span>
             <ArrowRight size={16} aria-hidden="true" />
             <span className="text-lg font-black">{lastAttempt.totalScore} คะแนน</span>
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ml-2 ${
-              scoreGrowth >= 0 ? 'bg-white text-blue-700' : 'bg-rose-100 text-rose-700'
+            {/* Animated growth badge */}
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ml-2 flex items-center gap-0.5 animate-slide-up ${
+              isPositiveGrowth ? 'bg-white text-blue-700' : 'bg-rose-100 text-rose-700'
             }`}>
-              {scoreGrowth >= 0 ? `+${scoreGrowth}` : scoreGrowth} คะแนน
+              {isPositiveGrowth 
+                ? <ArrowUp size={12} className="text-emerald-600 animate-float" />
+                : <ArrowDown size={12} className="text-rose-600" />
+              }
+              {isPositiveGrowth ? `+${scoreGrowth}` : scoreGrowth} คะแนน
             </span>
           </div>
         </div>

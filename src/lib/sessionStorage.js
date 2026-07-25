@@ -1,5 +1,5 @@
-// 💾 LOCAL & SUPABASE SESSION & DATA STORAGE MANAGEMENT
-// Supports offline-first Kahoot-style room codes with Student ID persistent session restoration
+import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { sql as neonSql, isNeonConfigured } from './neonClient';
 
 const SESSION_KEY = 'prompt_battle_session';
 const ATTEMPTS_KEY = 'prompt_battle_attempts';
@@ -50,6 +50,27 @@ export function loginStudent(roomCode, studentId, username) {
   };
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+  // Sync profile to Supabase in background if configured
+  if (isSupabaseConfigured && supabase) {
+    supabase.from('profiles').upsert({
+      room_code: room.code,
+      username: username.trim(),
+      role: 'student'
+    }, { onConflict: 'room_code,username' }).then(({ error }) => {
+      if (error) console.warn('Supabase profile sync notice:', error.message);
+    }).catch(() => {});
+  }
+
+  // Sync profile to Neon Tech in background if configured
+  if (isNeonConfigured && neonSql) {
+    neonSql`
+      INSERT INTO profiles (room_code, username, role)
+      VALUES (${room.code}, ${username.trim()}, 'student')
+      ON CONFLICT (room_code, username) DO NOTHING
+    `.catch((err) => console.warn('Neon profile sync notice:', err.message));
+  }
+
   return session;
 }
 
@@ -120,6 +141,42 @@ export function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores
 
   allAttempts.push(newAttempt);
   localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(allAttempts));
+
+  // Sync attempt record to Supabase backend table in background if configured
+  if (isSupabaseConfigured && supabase) {
+    supabase.from('attempts').insert({
+      room_code: user.roomCode,
+      username: user.username,
+      stage_id: stageId,
+      attempt_number: attemptNumber,
+      prompt_text: promptText,
+      ai_output: aiOutput,
+      scores,
+      feedback,
+      total_score: totalScore
+    }).then(({ error }) => {
+      if (error) console.warn('Supabase attempt sync notice:', error.message);
+    }).catch(() => {});
+  }
+
+  // Sync attempt record to Neon Tech in background if configured
+  if (isNeonConfigured && neonSql) {
+    neonSql`
+      INSERT INTO attempts (room_code, username, stage_id, attempt_number, prompt_text, ai_output, scores, feedback, total_score)
+      VALUES (
+        ${user.roomCode}, 
+        ${user.username}, 
+        ${stageId}, 
+        ${attemptNumber}, 
+        ${promptText}, 
+        ${aiOutput}, 
+        ${JSON.stringify(scores)}, 
+        ${JSON.stringify(feedback)}, 
+        ${totalScore}
+      )
+    `.catch((err) => console.warn('Neon attempt sync notice:', err.message));
+  }
+
   return newAttempt;
 }
 
