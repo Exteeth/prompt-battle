@@ -15,8 +15,8 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
     localStorage.clear();
   });
 
-  it('should login student with valid room code, student ID, and username', () => {
-    const session = loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+  it('should login student with valid room code, student ID, and username', async () => {
+    const session = await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
     expect(session.studentId).toBe('6401');
     expect(session.username).toBe('ไทเกอร์');
     expect(session.roomCode).toBe('PROMPT-101');
@@ -28,8 +28,8 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
     expect(currentUser.username).toBe('ไทเกอร์');
   });
 
-  it('should calculate unlocked user achievements correctly', () => {
-    loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+  it('should calculate unlocked user achievements correctly', async () => {
+    await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
 
     saveAttempt({
       stageId: 1,
@@ -49,9 +49,9 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
     expect(highscoreBadge.unlocked).toBe(true);
   });
 
-  it('should restore existing attempts when logging in again with same student ID', () => {
+  it('should restore existing attempts when logging in again with same student ID', async () => {
     // 1st Login & Save attempt
-    loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+    await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
     saveAttempt({
       stageId: 1,
       stageNumber: '0.1',
@@ -64,7 +64,7 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
 
     // Logout & Login again with same student ID
     logout();
-    const session2 = loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+    const session2 = await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
     expect(session2.userId).toBe('usr_PROMPT-101_6401');
 
     const detailed = getStudentDetailedScores('PROMPT-101');
@@ -72,12 +72,12 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
     expect(detailed[0].totalPoints).toBe(16);
   });
 
-  it('should throw error for invalid room code', () => {
-    expect(() => loginStudent('INVALID-ROOM', '6401', 'ไทเกอร์')).toThrow();
+  it('should throw error for invalid room code', async () => {
+    await expect(loginStudent('INVALID-ROOM', '6401', 'ไทเกอร์')).rejects.toThrow();
   });
 
-  it('should throw error for missing student ID', () => {
-    expect(() => loginStudent('PROMPT-101', '', 'ไทเกอร์')).toThrow('กรุณากรอกรหัสนักเรียน/เลขประจำตัว');
+  it('should throw error for missing student ID', async () => {
+    await expect(loginStudent('PROMPT-101', '', 'ไทเกอร์')).rejects.toThrow('กรุณากรอกรหัสนักเรียน/เลขประจำตัว');
   });
 
   it('should login teacher with correct PIN 1234', () => {
@@ -90,8 +90,8 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
     expect(() => loginTeacher('PROMPT-101', '9999')).toThrow('รหัส PIN ของครูไม่ถูกต้อง');
   });
 
-  it('should logout correctly', () => {
-    loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+  it('should logout correctly', async () => {
+    await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
     logout();
     expect(getCurrentUser()).toBeNull();
   });

@@ -4,6 +4,7 @@ import { sql as neonSql, isNeonConfigured } from './neonClient';
 const SESSION_KEY = 'prompt_battle_session';
 const ATTEMPTS_KEY = 'prompt_battle_attempts';
 const ROOMS_KEY = 'prompt_battle_rooms';
+const BACKEND_SYNCED_KEY = 'prompt_battle_backend_synced';
 
 // Initialize default room data
 export function initDefaultData() {
@@ -17,9 +18,81 @@ export function initDefaultData() {
 }
 
 // ----------------------------------------------------
+// Helper: Ensure Neon tables exist
+// ----------------------------------------------------
+async function ensureNeonTables() {
+  if (!isNeonConfigured || !neonSql) return;
+  try {
+    await neonSql`
+      CREATE TABLE IF NOT EXISTS profiles (
+        id SERIAL PRIMARY KEY,
+        room_code TEXT NOT NULL,
+        username TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'student',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE (room_code, username)
+      )
+    `;
+    await neonSql`
+      CREATE TABLE IF NOT EXISTS attempts (
+        id SERIAL PRIMARY KEY,
+        room_code TEXT NOT NULL,
+        username TEXT NOT NULL,
+        student_id TEXT NOT NULL DEFAULT '',
+        stage_id INT NOT NULL,
+        stage_number TEXT NOT NULL DEFAULT '',
+        attempt_number INT NOT NULL DEFAULT 1,
+        prompt_text TEXT NOT NULL,
+        ai_output TEXT NOT NULL DEFAULT '',
+        scores JSONB NOT NULL DEFAULT '{}',
+        feedback JSONB NOT NULL DEFAULT '{}',
+        total_score NUMERIC(5, 1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+    console.log('✅ Neon backend tables verified');
+  } catch (err) {
+    console.warn('⚠️ Neon table creation notice:', err.message);
+  }
+}
+
+// ----------------------------------------------------
+// Helper: Fetch ALL attempts for a room from Neon
+// ----------------------------------------------------
+async function fetchRoomAttemptsFromNeon(roomCode) {
+  if (!isNeonConfigured || !neonSql) return [];
+  try {
+    const rows = await neonSql`
+      SELECT * FROM attempts
+      WHERE room_code = ${roomCode}
+      ORDER BY created_at DESC
+    `;
+    return rows.map(r => ({
+      id: 'neon_' + r.id,
+      roomCode: r.room_code,
+      userId: `usr_${r.room_code}_${r.student_id || r.username}`,
+      studentId: r.student_id || '',
+      username: r.username,
+      stageId: r.stage_id,
+      stageNumber: r.stage_number || '',
+      attemptNumber: r.attempt_number,
+      promptText: r.prompt_text,
+      aiOutput: r.ai_output,
+      scores: typeof r.scores === 'string' ? JSON.parse(r.scores) : r.scores,
+      feedback: typeof r.feedback === 'string' ? JSON.parse(r.feedback) : r.feedback,
+      totalScore: parseFloat(r.total_score) || 0,
+      createdAt: r.created_at
+    }));
+  } catch (err) {
+    console.warn('⚠️ Neon fetch room attempts:', err.message);
+    return [];
+  }
+}
+
+// ----------------------------------------------------
 // 1. AUTH & SESSION MANAGEMENT
 // ----------------------------------------------------
-export function loginStudent(roomCode, studentId, username) {
+export async function loginStudent(roomCode, studentId, username) {
   initDefaultData();
   const rooms = JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]');
   const room = rooms.find(r => r.code.toUpperCase() === roomCode.trim().toUpperCase());
@@ -51,6 +124,9 @@ export function loginStudent(roomCode, studentId, username) {
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
+  // Ensure Neon tables exist, then sync profile
+  await ensureNeonTables();
+
   // Sync profile to Supabase in background if configured
   if (isSupabaseConfigured && supabase) {
     supabase.from('profiles').upsert({
@@ -62,13 +138,34 @@ export function loginStudent(roomCode, studentId, username) {
     }).catch(() => {});
   }
 
-  // Sync profile to Neon Tech in background if configured
+  // Sync profile to Neon in background if configured
   if (isNeonConfigured && neonSql) {
     neonSql`
       INSERT INTO profiles (room_code, username, role)
       VALUES (${room.code}, ${username.trim()}, 'student')
       ON CONFLICT (room_code, username) DO NOTHING
     `.catch((err) => console.warn('Neon profile sync notice:', err.message));
+  }
+
+  // 🔥 CRITICAL FIX: Fetch & merge room attempts from Neon into localStorage
+  const alreadySynced = localStorage.getItem(BACKEND_SYNCED_KEY + '_' + room.code);
+  if (!alreadySynced && isNeonConfigured && neonSql) {
+    try {
+      const neonAttempts = await fetchRoomAttemptsFromNeon(room.code);
+      if (neonAttempts.length > 0) {
+        const existingAttempts = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
+        // Merge: keep localStorage + Neon (avoid duplicates by checking id patterns)
+        const existingIds = new Set(existingAttempts.map(a => a.id));
+        const newFromNeon = neonAttempts.filter(a => !existingIds.has(a.id));
+        const merged = [...existingAttempts, ...newFromNeon];
+        localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(merged));
+        console.log(`📡 Synced ${newFromNeon.length} attempts from Neon backend for room ${room.code}`);
+      }
+      // Mark as synced so we don't re-fetch every login
+      localStorage.setItem(BACKEND_SYNCED_KEY + '_' + room.code, 'true');
+    } catch (err) {
+      console.warn('⚠️ Neon fetch on login:', err.message);
+    }
   }
 
   return session;
@@ -106,13 +203,18 @@ export function getCurrentUser() {
 }
 
 export function logout() {
+  // Clear sync flag so next login re-fetches from backend
+  const user = getCurrentUser();
+  if (user) {
+    localStorage.removeItem(BACKEND_SYNCED_KEY + '_' + user.roomCode);
+  }
   localStorage.removeItem(SESSION_KEY);
 }
 
 // ----------------------------------------------------
 // 2. ATTEMPTS & PROGRESS MANAGEMENT
 // ----------------------------------------------------
-export function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores, feedback, totalScore }) {
+export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores, feedback, totalScore }) {
   const user = getCurrentUser();
   if (!user) return null;
 
@@ -159,14 +261,17 @@ export function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores
     }).catch(() => {});
   }
 
-  // Sync attempt record to Neon Tech in background if configured
+  // 🔥 Sync attempt to Neon backend in background
   if (isNeonConfigured && neonSql) {
+    await ensureNeonTables();
     neonSql`
-      INSERT INTO attempts (room_code, username, stage_id, attempt_number, prompt_text, ai_output, scores, feedback, total_score)
+      INSERT INTO attempts (room_code, username, student_id, stage_id, stage_number, attempt_number, prompt_text, ai_output, scores, feedback, total_score)
       VALUES (
         ${user.roomCode}, 
-        ${user.username}, 
+        ${user.username},
+        ${user.studentId || ''},
         ${stageId}, 
+        ${stageNumber || ''},
         ${attemptNumber}, 
         ${promptText}, 
         ${aiOutput}, 

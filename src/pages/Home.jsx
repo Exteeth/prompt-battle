@@ -96,12 +96,12 @@ export default function Home() {
     }, 200);
   };
 
-  const handleStudentSubmit = (e) => {
+  const handleStudentSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       playPopSound();
-      loginStudent(roomCode, studentId, username);
+      await loginStudent(roomCode, studentId, username);
       navigate('/stages');
     } catch (err) {
       setError(err.message);

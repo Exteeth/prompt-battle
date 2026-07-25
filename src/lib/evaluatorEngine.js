@@ -1,15 +1,5 @@
 // 🤖 PROMPT BATTLE EVALUATOR ENGINE
 // AI Evaluación Service with KKU IntelSphere API (OpenAI-compatible) + Offline Heuristic Fallback
-//
-// 🔗 base_url: VITE_KKU_BASE_URL (default: https://gen.ai.kku.ac.th/api/v1)
-// 🔑 api_key: VITE_KKU_API_KEY
-// 🤖 model:   deepseek-v4-flash
-//
-// 📋 เกณฑ์ประเมิน 4 ด้าน (รวม 20 คะแนน):
-//    1. clarity      — ความชัดเจนของ Prompt
-//    2. completeness — ความครบถ้วน
-//    3. technique    — การใช้เทคนิค Prompt
-//    4. quality      — คุณภาพผลลัพธ์ AI
 
 const KKU_BASE_URL = import.meta.env.VITE_KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
 const KKU_MODEL = 'deepseek-v4-flash';
@@ -17,26 +7,22 @@ const KKU_MODEL = 'deepseek-v4-flash';
 export async function evaluatePrompt({ promptText, stage, previousAttemptsCount = 0 }) {
   const apiKey = import.meta.env.VITE_KKU_API_KEY;
 
-  // If API Key is configured, attempt real LLM API evaluation via KKU
   if (apiKey) {
     try {
       return await evaluateWithLLM(promptText, stage, apiKey);
     } catch (err) {
-      console.warn('KKU API Evaluation failed or quota exceeded, falling back to smart heuristic engine:', err);
+      console.warn('KKU API Evaluation failed or quota exceeded, falling back to smart heuristic engine:', err.message);
     }
   }
 
-  // Smart Heuristic Evaluator Engine (Offline / Demo Fallback)
   return evaluateWithHeuristics(promptText, stage);
 }
 
 // ----------------------------------------------------
-// 1. SMART HEURISTIC EVALUATOR (Offline/Local Engine)
-//    ประเมิน 4 ด้าน ด้านละ 1-5 คะแนน รวม 20 คะแนน
+// 1. SMART HEURISTIC EVALUATOR (4 ด้าน 1-5 คะแนน = /20)
 // ----------------------------------------------------
 function evaluateWithHeuristics(promptText, stage) {
   const text = promptText.trim();
-  const wordCount = text.split(/\s+/).length;
   const charCount = text.length;
 
   let clarityScore = 3;
@@ -48,7 +34,6 @@ function evaluateWithHeuristics(promptText, stage) {
   let whatMissing = [];
   let suggestions = [];
 
-  // Check 1: Length & Detail
   if (charCount > 60) {
     clarityScore += 1;
     whatWorked.push('มีรายละเอียดคำสั่งชัดเจน');
@@ -57,7 +42,6 @@ function evaluateWithHeuristics(promptText, stage) {
     whatMissing.push('คำสั่งยังสั้นเกินไป ควรเพิ่มบริบทและเป้าหมายให้ชัดเจนขึ้น');
   }
 
-  // Check 2: Structural Keywords (Format & Constraints)
   const formatKeywords = ['ตาราง', 'markdown', 'json', 'ข้อ', 'ข้อสั้น', ' bullet', 'รูปแบบ', 'โครงสร้าง'];
   const hasFormat = formatKeywords.some(k => text.toLowerCase().includes(k));
   if (hasFormat) {
@@ -69,7 +53,6 @@ function evaluateWithHeuristics(promptText, stage) {
     suggestions.push('ลองเพิ่มคำสั่งระบุรูปแบบ เช่น "แสดงผลลัพธ์เป็นตาราง Markdown" หรือ "สรุปเป็น 3 ข้อ"');
   }
 
-  // Check 3: Role & Persona Prompting
   const roleKeywords = ['คุณคือ', 'สวมบทบาท', 'บทบาท', 'หน้าที่', 'ในฐานะ', 'ครู', 'นักเขียน', 'เจ้าหน้าที่'];
   const hasRole = roleKeywords.some(k => text.toLowerCase().includes(k));
   if (hasRole) {
@@ -80,40 +63,31 @@ function evaluateWithHeuristics(promptText, stage) {
     suggestions.push('เริ่มต้น Prompt ด้วยการกำหนดบทบาท เช่น "คุณคือครูสอนวิทยาศาสตร์ที่ใจดี..."');
   }
 
-  // Check 4: Chain of Thought & Step-by-step
   const cotKeywords = ['ทีละขั้นตอน', 'step-by-step', 'แสดงวิธีคิด', 'อธิบายเหตุผล', 'ลำดับขั้นตอน'];
-  const hasCot = cotKeywords.some(k => text.toLowerCase().includes(k));
-  if (hasCot) {
+  if (cotKeywords.some(k => text.toLowerCase().includes(k))) {
     techniqueScore += 1;
     whatWorked.push('มีการใช้เทคนิค Chain-of-Thought สั่งให้ AI แสดงวิธีคิดทีละขั้นตอน');
   }
 
-  // Check 5: Few-Shot Examples
   const fewShotKeywords = ['ตัวอย่าง', ' pattern', 'แพทเทิร์น', ' input', ' output'];
-  const hasFewShot = fewShotKeywords.some(k => text.toLowerCase().includes(k));
-  if (hasFewShot) {
+  if (fewShotKeywords.some(k => text.toLowerCase().includes(k))) {
     techniqueScore += 1;
     whatWorked.push('มีการส่งตัวอย่าง (Few-Shot) ให้ AI เรียนรู้แนวทางการตอบ');
   }
 
-  // Check 6: Negative constraints (ห้าม...)
   if (text.includes('ห้าม') || text.includes('ไม่ต้อง') || text.includes('ไม่เอา')) {
     completenessScore += 1;
     whatWorked.push('มีการกำหนดข้อห้าม/ข้อจำกัด (Negative Prompting) เพื่อตัดข้อความส่วนเกิน');
   }
 
-  // Cap scores between 1 and 5
   clarityScore = Math.min(5, Math.max(1, clarityScore));
   completenessScore = Math.min(5, Math.max(1, completenessScore));
   techniqueScore = Math.min(5, Math.max(1, techniqueScore));
   qualityScore = Math.min(5, Math.max(1, Math.round((clarityScore + completenessScore + techniqueScore) / 3)));
 
   const totalScore = clarityScore + completenessScore + techniqueScore + qualityScore;
-
-  // Generate simulated AI Output based on stage and prompt quality
   const simulatedOutput = generateSimulatedAIOutput(stage, text, totalScore);
 
-  // Construct coaching feedback
   const feedback = {
     what_worked: whatWorked.length > 0 ? whatWorked.join(' • ') : 'เขียน Prompt ภาษาไทยเข้าใจได้ง่าย',
     what_missing: whatMissing.length > 0 ? whatMissing.join(' • ') : 'ยังสามารถระบุข้อจำกัดเพิ่มเติมเพื่อให้ AI ทำงานได้เป๊ะยิ่งขึ้น',
@@ -124,12 +98,7 @@ function evaluateWithHeuristics(promptText, stage) {
   };
 
   return {
-    scores: {
-      clarity: clarityScore,
-      completeness: completenessScore,
-      technique: techniqueScore,
-      quality: qualityScore
-    },
+    scores: { clarity: clarityScore, completeness: completenessScore, technique: techniqueScore, quality: qualityScore },
     totalScore,
     maxScore: 20,
     feedback,
@@ -137,75 +106,24 @@ function evaluateWithHeuristics(promptText, stage) {
   };
 }
 
-// Helper to simulate AI Output for the chat view
 function generateSimulatedAIOutput(stage, promptText, totalScore) {
   if (stage.stage_number === '0.1') {
-    return `### สรุปประโยชน์ของ AI ในการศึกษา (สำหรับนักเรียน ม.ปลาย)
-
-1. **ช่วยสรุปเนื้อหาและอธิบายเรื่องยากให้ง่ายขึ้น:** สามารถย่อยบทเรียนที่ซับซ้อนให้เข้าใจง่ายตามสไตล์การเรียนของแต่ละคน
-2. **ช่วยเป็นผู้ช่วยติวส่วนตัวได้ 24 ชั่วโมง:** สามารถถามคำถาม ทบทวนข้อสอบ หรือขอตัวอย่างเพิ่มเติมได้ตลอดเวลา
-3. **ช่วยวางแผนการเรียนและจัดการเวลา:** ช่วยจัดตารางอ่านหนังสือและวางแผนเตรียมสอบเข้ามหาวิทยาลัยอย่างมีประสิทธิภาพ`;
+    return `### สรุปประโยชน์ของ AI ในการศึกษา (สำหรับนักเรียน ม.ปลาย)\n\n1. **ช่วยสรุปเนื้อหาและอธิบายเรื่องยากให้ง่ายขึ้น:** สามารถย่อยบทเรียนที่ซับซ้อนให้เข้าใจง่ายตามสไตล์การเรียนของแต่ละคน\n2. **ช่วยเป็นผู้ช่วยติวส่วนตัวได้ 24 ชั่วโมง:** สามารถถามคำถาม ทบทวนข้อสอบ หรือขอตัวอย่างเพิ่มเติมได้ตลอดเวลา\n3. **ช่วยวางแผนการเรียนและจัดการเวลา:** ช่วยจัดตารางอ่านหนังสือและวางแผนเตรียมสอบเข้ามหาวิทยาลัยอย่างมีประสิทธิภาพ`;
   }
-
   if (stage.stage_number === '0.4' || stage.stage_number === '1') {
-    return `| ปี (ค.ศ./พ.ศ.) | บุคคลสำคัญ | เหตุการณ์สำคัญ |
-| :--- | :--- | :--- |
-| พุทธศตวรรษที่ 18 | สมเด็จพระบรมราชาธิราชที่ 1 (ขุนหลวงพะงั่ว) | ทรงรวบรวมอาณาจักรอยุธยาให้มีความมั่นคง |
-| ค.ศ. 1592 | สมเด็จพระนเรศวรมหาราช | ทรงกระทำยุทธหัตถีมีชัยชนะเหนือพระมหาอุปราชา |
-| ค.ศ. 1767 | สมเด็จพระเจ้าตากสินมหาราช | กอบกู้เอกราชและสถาปนากรุงธนบุรีหลังเสียกรุงครั้งที่ 2 |`;
+    return `| ปี (ค.ศ./พ.ศ.) | บุคคลสำคัญ | เหตุการณ์สำคัญ |\n| :--- | :--- | :--- |\n| พุทธศตวรรษที่ 18 | สมเด็จพระบรมราชาธิราชที่ 1 (ขุนหลวงพะงั่ว) | ทรงรวบรวมอาณาจักรอยุธยาให้มีความมั่นคง |\n| ค.ศ. 1592 | สมเด็จพระนเรศวรมหาราช | ทรงกระทำยุทธหัตถีมีชัยชนะเหนือพระมหาอุปราชา |\n| ค.ศ. 1767 | สมเด็จพระเจ้าตากสินมหาราช | กอบกู้เอกราชและสถาปนากรุงธนบุรีหลังเสียกรุงครั้งที่ 2 |`;
   }
-
   if (stage.stage_number === '2' || stage.stage_number === '7') {
-    return `**บทละคร: แสงสุดท้ายกลางห้วงอวกาศ**
-
-*(บรรยากาศในห้องควบคุมสถานีอวกาศที่ไฟกำลังริบหรี่)*
-
-**นักบินอวกาศ:** "AI-99... สัญญาณเตือนปริมาณ **ออกซิเจน** ลดลงเหลือไม่ถึง 5% แล้วใช่ไหม?"
-
-**หุ่นยนต์ AI-99:** *(ส่งเสียงติ๊ดเบาๆ)* "ยืนยันครับกัปตัน แต่ระบบสำรองยังคงทำงานเพื่อส่งพิกัดของเราออกไป ท่ามกลางหมู่ **ดวงดาว** นับล้าน ตราบใดที่สัญญาณยังส่งออกไปได้ โปรดเก็บรักษา **ความหวัง** ไว้ครับ"
-
-**นักบินอวกาศ:** *(ยิ้มเจื่อนๆ มองออกไปนอกช่องหน้าต่าง)* "เธอคิดว่าจะมีใครบางคนในจักรวาลนี้ได้ยินเสียงของเราไหม AI-99?"`;
+    return `**บทละคร: แสงสุดท้ายกลางห้วงอวกาศ**\n\n*(บรรยากาศในห้องควบคุมสถานีอวกาศที่ไฟกำลังริบหรี่)*\n\n**นักบินอวกาศ:** "AI-99... สัญญาณเตือนปริมาณ **ออกซิเจน** ลดลงเหลือไม่ถึง 5% แล้วใช่ไหม?"\n\n**หุ่นยนต์ AI-99:** *(ส่งเสียงติ๊ดเบาๆ)* "ยืนยันครับกัปตัน แต่ระบบสำรองยังคงทำงานเพื่อส่งพิกัดของเราออกไป ท่ามกลางหมู่ **ดวงดาว** นับล้าน ตราบใดที่สัญญาณยังส่งออกไปได้ โปรดเก็บรักษา **ความหวัง** ไว้ครับ"\n\n**นักบินอวกาศ:** *(ยิ้มเจื่อนๆ มองออกไปนอกช่องหน้าต่าง)* "เธอคิดว่าจะมีใครบางคนในจักรวาลนี้ได้ยินเสียงของเราไหม AI-99?"`;
   }
-
   if (stage.stage_number === '3' || stage.stage_number === '8') {
-    return `### 1. อธิบายลอจิกการทำงาน (Step-by-step)
-1. ตรวจสอบว่า \`score\` ไม่อยู่ในช่วง 0 - 100 หรือไม่ (ถ้าน้อยกว่า 0 หรือมากกว่า 100 คืนค่า 'Invalid Score')
-2. ตรวจสอบช่วงคะแนนจากมากไปน้อย: >= 80 (A), >= 70 (B), >= 60 (C), >= 50 (D), และ < 50 (F)
-
-### 2. โค้ด JavaScript
-\`\`\`javascript
-function calculateGrade(score) {
-  // Edge cases verification
-  if (typeof score !== 'number' || score < 0 || score > 100) {
-    return 'Invalid Score';
+    return `### 1. อธิบายลอจิกการทำงาน (Step-by-step)\n1. ตรวจสอบว่า score ไม่อยู่ในช่วง 0 - 100 หรือไม่ (ถ้าน้อยกว่า 0 หรือมากกว่า 100 คืนค่า 'Invalid Score')\n2. ตรวจสอบช่วงคะแนนจากมากไปน้อย: >= 80 (A), >= 70 (B), >= 60 (C), >= 50 (D), และ < 50 (F)\n\n### 2. โค้ด JavaScript\n\`\`\`javascript\nfunction calculateGrade(score) {\n  if (typeof score !== 'number' || score < 0 || score > 100) {\n    return 'Invalid Score';\n  }\n  if (score >= 80) return 'A';\n  if (score >= 70) return 'B';\n  if (score >= 60) return 'C';\n  if (score >= 50) return 'D';\n  return 'F';\n}\n\`\`\`\n\n### 3. ตัวอย่าง Test Cases\n- calculateGrade(85) ➡️ Output: 'A'\n- calculateGrade(45) ➡️ Output: 'F'\n- calculateGrade(-10) ➡️ Output: 'Invalid Score'`;
   }
-
-  if (score >= 80) return 'A';
-  if (score >= 70) return 'B';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
-  return 'F';
-}
-\`\`\`
-
-### 3. ตัวอย่าง Test Cases
-- \`calculateGrade(85)\` ➡️ Output: \`'A'\`
-- \`calculateGrade(45)\` ➡️ Output: \`'F'\`
-- \`calculateGrade(-10)\` ➡️ Output: \`'Invalid Score'\``;
-  }
-
-  // Default response template
-  return `สวัสดีครับ! นี่คือผลลัพธ์จาก AI ประมวลผลตาม Prompt ของคุณ:
-
-> "${promptText.slice(0, 100)}${promptText.length > 100 ? '...' : ''}"
-
-**ผลลัพธ์:**
-ระบบได้ทำการประมวลผลคำสั่งตามที่คุณระบุครบถ้วนเรียบร้อยแล้ว โดยดึงประเด็นสำคัญและเรียบเรียงให้อ่านง่าย เหมาะสำหรับการนำไปฝึกฝนและพัฒนาต่อยอดทักษะ Prompt Engineering ต่อไปครับ! ✨`;
+  return `สวัสดีครับ! นี่คือผลลัพธ์จาก AI ประมวลผลตาม Prompt ของคุณ:\n\n> "${promptText.slice(0, 100)}${promptText.length > 100 ? '...' : ''}"\n\n**ผลลัพธ์:**\nระบบได้ทำการประมวลผลคำสั่งตามที่คุณระบุครบถ้วนเรียบร้อยแล้ว โดยดึงประเด็นสำคัญและเรียบเรียงให้อ่านง่าย เหมาะสำหรับการนำไปฝึกฝนและพัฒนาต่อยอดทักษะ Prompt Engineering ต่อไปครับ! ✨`;
 }
 
 // ----------------------------------------------------
-// 2. KKU IntelSphere API EVALUATION (OpenAI-compatible)
-//    AI ประเมิน 4 ด้าน ด้านละ 1-5 คะแนน รวม 20 คะแนน
+// 2. KKU API EVALUATION (OpenAI-compatible, 8s timeout)
 // ----------------------------------------------------
 async function evaluateWithLLM(promptText, stage, apiKey) {
   const systemPrompt = `คุณคือ AI Evaluator ประเมินทักษะ Prompt Engineering ของนักเรียนในเกม Prompt Battle
@@ -232,6 +150,9 @@ async function evaluateWithLLM(promptText, stage, apiKey) {
 
 ⚠️ ห้ามเฉลย Prompt ที่สมบูรณ์แบบ — ให้คำแนะนำแบบโค้ชชิ่งเท่านั้น`;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
   const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -240,11 +161,12 @@ async function evaluateWithLLM(promptText, stage, apiKey) {
     },
     body: JSON.stringify({
       model: KKU_MODEL,
-      messages: [
-        { role: 'user', content: systemPrompt }
-      ]
-    })
+      messages: [{ role: 'user', content: systemPrompt }]
+    }),
+    signal: controller.signal
   });
+
+  clearTimeout(timeoutId);
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => '');
@@ -253,10 +175,8 @@ async function evaluateWithLLM(promptText, stage, apiKey) {
 
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content || '';
-
   const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
   const parsed = JSON.parse(cleanJson);
-
   const s = parsed.scores;
   const totalScore = (s.clarity || 0) + (s.completeness || 0) + (s.technique || 0) + (s.quality || 0);
 

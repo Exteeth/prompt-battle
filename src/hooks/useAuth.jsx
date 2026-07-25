@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const loginStudent = (roomCode, studentId, username) => {
-    const session = apiLoginStudent(roomCode, studentId, username);
+  const loginStudent = async (roomCode, studentId, username) => {
+    const session = await apiLoginStudent(roomCode, studentId, username);
     setUser(session);
     return session;
   };
