@@ -1,15 +1,16 @@
 // 🤖 PROMPT BATTLE EVALUATOR ENGINE
-// AI Evaluación Service with Gemini/Groq + Offline Heuristic Fallback
+// AI Evaluación Service with KKU IntelSphere API + Offline Heuristic Fallback
+// KKU API: OpenAI-compatible via https://gen.ai.kku.ac.th/api/v1
 
 export async function evaluatePrompt({ promptText, stage, previousAttemptsCount = 0 }) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GROQ_API_KEY;
+  const apiKey = import.meta.env.VITE_KKU_API_KEY;
 
-  // If API Key is configured, attempt real LLM API evaluation
+  // If API Key is configured, attempt real LLM API evaluation via KKU
   if (apiKey) {
     try {
       return await evaluateWithLLM(promptText, stage, apiKey);
     } catch (err) {
-      console.warn('LLM API Evaluation failed or quota exceeded, falling back to smart heuristic engine:', err);
+      console.warn('KKU API Evaluation failed or quota exceeded, falling back to smart heuristic engine:', err);
     }
   }
 
@@ -189,9 +190,11 @@ function calculateGrade(score) {
 }
 
 // ----------------------------------------------------
-// 2. REAL LLM API EVALUATION (Gemini/Groq Integration)
+// 2. KKU IntelSphere API EVALUATION (OpenAI-compatible)
 // ----------------------------------------------------
 async function evaluateWithLLM(promptText, stage, apiKey) {
+  const KKU_BASE_URL = 'https://gen.ai.kku.ac.th/api/v1';
+
   // System Prompt instructing LLM to act as a strict & encouraging teacher evaluator
   const systemPrompt = `คุณคือ AI Evaluator ประเมินทักษะ Prompt Engineering ของนักเรียนในเกม Prompt Battle
 โจทย์คือ: "${stage.problem_statement}"
@@ -215,21 +218,31 @@ async function evaluateWithLLM(promptText, stage, apiKey) {
   "aiOutput": "<ผลลัพธ์ตัวอย่างที่ AI ควรตอบกลับจาก prompt นี้>"
 }`;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+  const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: systemPrompt }] }]
+      model: 'gemini-3.5-flash',
+      messages: [
+        { role: 'user', content: systemPrompt }
+      ]
     })
   });
 
-  if (!response.ok) throw new Error(`Gemini API error: ${response.statusText}`);
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(`KKU API error ${response.status}: ${response.statusText}${errorBody ? ' — ' + errorBody : ''}`);
+  }
+
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  
+  const text = data.choices?.[0]?.message?.content || '';
+
   const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
   const parsed = JSON.parse(cleanJson);
-  
+
   const totalScore = parsed.scores.clarity + parsed.scores.completeness + parsed.scores.technique + parsed.scores.quality;
 
   return {
