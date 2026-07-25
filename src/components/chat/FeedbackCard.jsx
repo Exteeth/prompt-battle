@@ -1,13 +1,15 @@
 import React from 'react';
 import { Award, CheckCircle2, AlertCircle, Lightbulb, Star } from 'lucide-react';
 
-export default function FeedbackCard({ scores, totalScore, feedback, attemptNumber }) {
-  const getRatingStars = (total) => {
+export default function FeedbackCard({ scores, totalScore, maxScore = 35, feedback, attemptNumber }) {
+  const scorePercent = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+
+  const getRatingStars = (pct) => {
     let count = 1;
-    if (total >= 18) count = 5;
-    else if (total >= 15) count = 4;
-    else if (total >= 12) count = 3;
-    else if (total >= 8) count = 2;
+    if (pct >= 86) count = 5;      // ≥30/35
+    else if (pct >= 71) count = 4; // ≥25/35
+    else if (pct >= 60) count = 3; // ≥21/35
+    else if (pct >= 40) count = 2; // ≥14/35
 
     return (
       <div className="flex items-center gap-1">
@@ -33,25 +35,28 @@ export default function FeedbackCard({ scores, totalScore, feedback, attemptNumb
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xs sm:text-sm font-bold text-slate-900">ผลการประเมิน (Attempt {attemptNumber})</h3>
-              {getRatingStars(totalScore)}
+              {getRatingStars(scorePercent)}
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">คำนวณจากเกณฑ์ประเมิน 4 ด้าน รวมเต็ม 20 คะแนน</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">ประเมินตามเกณฑ์ 7 ด้าน (Rubric Framework) รวมเต็ม {maxScore} คะแนน</p>
           </div>
         </div>
 
         {/* Total Score Badge */}
         <div className="flex items-baseline gap-1 self-start sm:self-auto bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200 font-mono shadow-xs hover:scale-105 transition-transform">
           <span className="text-xl sm:text-2xl font-black text-blue-600">{totalScore}</span>
-          <span className="text-xs text-slate-500 font-medium">/ 20</span>
+          <span className="text-xs text-slate-500 font-medium">/ {maxScore}</span>
         </div>
       </div>
 
-      {/* 4 Criteria Progress Bars with dynamic color by score */}
+      {/* 7 Criteria Progress Bars with dynamic color */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1">
-        <ScoreBar label="ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
-        <ScoreBar label="ความครบถ้วน (Completeness)" score={scores.completeness} max={5} />
-        <ScoreBar label="เทคนิค Prompt (Technique)" score={scores.technique} max={5} />
-        <ScoreBar label="คุณภาพผลลัพธ์ (Quality)" score={scores.quality} max={5} />
+        <ScoreBar label="1. ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
+        <ScoreBar label="2. การกำหนดบทบาท (Role)" score={scores.role} max={5} />
+        <ScoreBar label="3. การให้บริบท (Context)" score={scores.context} max={5} />
+        <ScoreBar label="4. การระบุภารกิจ (Task)" score={scores.task} max={5} />
+        <ScoreBar label="5. ข้อจำกัด (Constraints)" score={scores.constraints} max={5} />
+        <ScoreBar label="6. รูปแบบผลลัพธ์ (Format)" score={scores.format} max={5} />
+        <ScoreBar label="7. การปรับแก้ (Refinement)" score={scores.refinement} max={5} />
       </div>
 
       {/* Thai Coaching Feedback Sections */}
@@ -91,8 +96,9 @@ export default function FeedbackCard({ scores, totalScore, feedback, attemptNumb
 }
 
 function ScoreBar({ label, score, max }) {
-  const percentage = (score / max) * 100;
-  // Dynamic bar/tint color by score tier: ≥80% emerald, 60–79% amber, <60% rose
+  const percentage = max > 0 ? (score / max) * 100 : 0;
+
+  // Dynamic bar color by score tier: ≥80% emerald, 60-79% amber, <60% rose
   const barColor = percentage >= 80
     ? 'bg-emerald-500'
     : percentage >= 60

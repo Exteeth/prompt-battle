@@ -63,11 +63,12 @@ export default function ChatMessage({ message, isLatest, isThinking }) {
             {message.aiOutput}
           </div>
 
-          {/* Inline Feedback Card */}
+          {/* Inline Feedback Card — pass maxScore from evaluation result */}
           {message.scores && message.feedback && (
             <FeedbackCard
               scores={message.scores}
               totalScore={message.totalScore}
+              maxScore={message.maxScore || 35}
               feedback={message.feedback}
               attemptNumber={message.attemptNumber}
             />

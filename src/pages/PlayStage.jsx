@@ -129,7 +129,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
       const updatedAttempts = [...attempts, savedAttempt];
       setAttempts(updatedAttempts);
 
-      // Add AI response message to UI
+      // Add AI response message to UI with maxScore for display
       setMessages(prev => [
         ...prev,
         {
@@ -138,13 +138,14 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
           aiOutput: result.aiOutput,
           scores: result.scores,
           totalScore: result.totalScore,
+          maxScore: result.maxScore || 35,
           feedback: result.feedback,
           attemptNumber: savedAttempt.attemptNumber
         }
       ]);
 
-      // Victory chime & Confetti celebration if high score!
-      if (result.totalScore >= 14) {
+      // Victory chime & Confetti celebration if high score (≥25/35 ~71%)
+      if (result.totalScore >= 25) {
         playVictoryChime();
         confetti({
           particleCount: 80,

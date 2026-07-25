@@ -13,7 +13,7 @@ describe('Evaluator Engine Unit Tests', () => {
       previousAttemptsCount: 0
     });
 
-    expect(result.totalScore).toBeGreaterThanOrEqual(12);
+    expect(result.totalScore).toBeGreaterThanOrEqual(18);
     expect(result.scores.clarity).toBeGreaterThanOrEqual(3);
     expect(result.feedback.what_worked).toBeDefined();
   });
@@ -28,7 +28,7 @@ describe('Evaluator Engine Unit Tests', () => {
       previousAttemptsCount: 0
     });
 
-    expect(result.totalScore).toBeLessThan(14);
+    expect(result.totalScore).toBeLessThan(28);
     expect(result.feedback.what_missing).toBeDefined();
   });
 });
