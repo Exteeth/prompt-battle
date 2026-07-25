@@ -138,14 +138,14 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
           aiOutput: result.aiOutput,
           scores: result.scores,
           totalScore: result.totalScore,
-          maxScore: result.maxScore || 35,
+          maxScore: result.maxScore || 20,
           feedback: result.feedback,
           attemptNumber: savedAttempt.attemptNumber
         }
       ]);
 
       // Victory chime & Confetti celebration if high score (≥25/35 ~71%)
-      if (result.totalScore >= 25) {
+      if (result.totalScore >= 14) {
         playVictoryChime();
         confetti({
           particleCount: 80,

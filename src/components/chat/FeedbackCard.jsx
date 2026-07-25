@@ -1,15 +1,15 @@
 import React from 'react';
 import { Award, CheckCircle2, AlertCircle, Lightbulb, Star } from 'lucide-react';
 
-export default function FeedbackCard({ scores, totalScore, maxScore = 35, feedback, attemptNumber }) {
+export default function FeedbackCard({ scores, totalScore, maxScore = 20, feedback, attemptNumber }) {
   const scorePercent = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
   const getRatingStars = (pct) => {
     let count = 1;
-    if (pct >= 86) count = 5;      // ≥30/35
-    else if (pct >= 71) count = 4; // ≥25/35
-    else if (pct >= 60) count = 3; // ≥21/35
-    else if (pct >= 40) count = 2; // ≥14/35
+    if (pct >= 90) count = 5;      // ≥18/20
+    else if (pct >= 75) count = 4; // ≥15/20
+    else if (pct >= 60) count = 3; // ≥12/20
+    else if (pct >= 40) count = 2; // ≥8/20
 
     return (
       <div className="flex items-center gap-1">
@@ -37,7 +37,7 @@ export default function FeedbackCard({ scores, totalScore, maxScore = 35, feedba
               <h3 className="text-xs sm:text-sm font-bold text-slate-900">ผลการประเมิน (Attempt {attemptNumber})</h3>
               {getRatingStars(scorePercent)}
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">ประเมินตามเกณฑ์ 7 ด้าน (Rubric Framework) รวมเต็ม {maxScore} คะแนน</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">คำนวณจากเกณฑ์ประเมิน 4 ด้าน รวมเต็ม {maxScore} คะแนน</p>
           </div>
         </div>
 
@@ -48,15 +48,12 @@ export default function FeedbackCard({ scores, totalScore, maxScore = 35, feedba
         </div>
       </div>
 
-      {/* 7 Criteria Progress Bars with dynamic color */}
+      {/* 4 Criteria Progress Bars with dynamic color */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1">
-        <ScoreBar label="1. ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
-        <ScoreBar label="2. การกำหนดบทบาท (Role)" score={scores.role} max={5} />
-        <ScoreBar label="3. การให้บริบท (Context)" score={scores.context} max={5} />
-        <ScoreBar label="4. การระบุภารกิจ (Task)" score={scores.task} max={5} />
-        <ScoreBar label="5. ข้อจำกัด (Constraints)" score={scores.constraints} max={5} />
-        <ScoreBar label="6. รูปแบบผลลัพธ์ (Format)" score={scores.format} max={5} />
-        <ScoreBar label="7. การปรับแก้ (Refinement)" score={scores.refinement} max={5} />
+        <ScoreBar label="ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
+        <ScoreBar label="ความครบถ้วน (Completeness)" score={scores.completeness} max={5} />
+        <ScoreBar label="เทคนิค Prompt (Technique)" score={scores.technique} max={5} />
+        <ScoreBar label="คุณภาพผลลัพธ์ (Quality)" score={scores.quality} max={5} />
       </div>
 
       {/* Thai Coaching Feedback Sections */}

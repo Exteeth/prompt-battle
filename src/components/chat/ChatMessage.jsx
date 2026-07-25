@@ -68,7 +68,7 @@ export default function ChatMessage({ message, isLatest, isThinking }) {
             <FeedbackCard
               scores={message.scores}
               totalScore={message.totalScore}
-              maxScore={message.maxScore || 35}
+              maxScore={message.maxScore || 20}
               feedback={message.feedback}
               attemptNumber={message.attemptNumber}
             />

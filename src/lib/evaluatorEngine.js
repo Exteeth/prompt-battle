@@ -5,14 +5,11 @@
 // 🔑 api_key: VITE_KKU_API_KEY
 // 🤖 model:   deepseek-v4-flash
 //
-// 📋 เกณฑ์ประเมิน 7 ด้าน (Researcher Rubric Framework):
-//    1. clarity     — ความชัดเจน
-//    2. role        — การกำหนดบทบาท
-//    3. context     — การให้บริบท
-//    4. task        — การระบุภารกิจ
-//    5. constraints — การกำหนดข้อจำกัด
-//    6. format      — การกำหนดรูปแบบ
-//    7. refinement  — การปรับแก้และทำซ้ำ
+// 📋 เกณฑ์ประเมิน 4 ด้าน (รวม 20 คะแนน):
+//    1. clarity      — ความชัดเจนของ Prompt
+//    2. completeness — ความครบถ้วน
+//    3. technique    — การใช้เทคนิค Prompt
+//    4. quality      — คุณภาพผลลัพธ์ AI
 
 const KKU_BASE_URL = import.meta.env.VITE_KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
 const KKU_MODEL = 'deepseek-v4-flash';
@@ -35,114 +32,86 @@ export async function evaluatePrompt({ promptText, stage, previousAttemptsCount 
 
 // ----------------------------------------------------
 // 1. SMART HEURISTIC EVALUATOR (Offline/Local Engine)
-//    ประเมิน 7 ด้าน ด้านละ 1-5 คะแนน รวม 35 คะแนน
+//    ประเมิน 4 ด้าน ด้านละ 1-5 คะแนน รวม 20 คะแนน
 // ----------------------------------------------------
 function evaluateWithHeuristics(promptText, stage) {
   const text = promptText.trim();
+  const wordCount = text.split(/\s+/).length;
   const charCount = text.length;
 
-  // Initialize all 7 criteria at 3 (baseline)
-  let clarity = 3;
-  let role = 3;
-  let context = 3;
-  let task = 3;
-  let constraints = 3;
-  let format = 3;
-  let refinement = 3;
+  let clarityScore = 3;
+  let completenessScore = 3;
+  let techniqueScore = 2;
+  let qualityScore = 3;
 
   let whatWorked = [];
   let whatMissing = [];
   let suggestions = [];
 
-  // --- 1. CLARITY (ความชัดเจน) ---
-  if (charCount > 80) {
-    clarity += 1;
-    whatWorked.push('คำสั่งมีความชัดเจน กระชับ สื่อความหมายเจาะจง');
+  // Check 1: Length & Detail
+  if (charCount > 60) {
+    clarityScore += 1;
+    whatWorked.push('มีรายละเอียดคำสั่งชัดเจน');
   } else if (charCount < 25) {
-    clarity -= 1;
-    whatMissing.push('คำสั่งยังสั้นเกินไป ควรสื่อความหมายให้เจาะจงและไม่กำกวม');
+    clarityScore -= 1;
+    whatMissing.push('คำสั่งยังสั้นเกินไป ควรเพิ่มบริบทและเป้าหมายให้ชัดเจนขึ้น');
   }
 
-  // --- 2. ROLE (การกำหนดบทบาท) ---
-  const roleKeywords = ['คุณคือ', 'สวมบทบาท', 'ในฐานะ', 'บทบาท', 'ทำหน้าที่เป็น', 'คุณเป็น'];
-  if (roleKeywords.some(k => text.includes(k))) {
-    role += 2;
-    whatWorked.push('มีการกำหนดบทบาทให้ AI ชัดเจน');
+  // Check 2: Structural Keywords (Format & Constraints)
+  const formatKeywords = ['ตาราง', 'markdown', 'json', 'ข้อ', 'ข้อสั้น', ' bullet', 'รูปแบบ', 'โครงสร้าง'];
+  const hasFormat = formatKeywords.some(k => text.toLowerCase().includes(k));
+  if (hasFormat) {
+    techniqueScore += 1;
+    completenessScore += 1;
+    whatWorked.push('มีการระบุรูปแบบ Output หรือโครงสร้างคำตอบที่ต้องการ');
+  } else {
+    whatMissing.push('ยังไม่ได้ระบุรูปแบบผลลัพธ์ที่ชัดเจน เช่น ตาราง ข้อสั้นๆ หรือ Markdown');
+    suggestions.push('ลองเพิ่มคำสั่งระบุรูปแบบ เช่น "แสดงผลลัพธ์เป็นตาราง Markdown" หรือ "สรุปเป็น 3 ข้อ"');
+  }
+
+  // Check 3: Role & Persona Prompting
+  const roleKeywords = ['คุณคือ', 'สวมบทบาท', 'บทบาท', 'หน้าที่', 'ในฐานะ', 'ครู', 'นักเขียน', 'เจ้าหน้าที่'];
+  const hasRole = roleKeywords.some(k => text.toLowerCase().includes(k));
+  if (hasRole) {
+    techniqueScore += 1;
+    whatWorked.push('มีการใช้เทคนิค Role Prompting (สวมบทบาท)');
   } else if (stage.problem_statement.includes('บทบาท') || stage.problem_statement.includes('คุณคือ')) {
-    role -= 1;
-    whatMissing.push('โจทย์นี้ต้องการกำหนดบทบาท แต่คุณยังไม่ได้ใส่ Role');
-    suggestions.push('เริ่ม Prompt ด้วย "คุณคือ..." เพื่อกำหนดบทบาทให้ AI');
+    whatMissing.push('โจทย์นี้เหมาะกับการกำหนด Role ให้ AI แต่คุณยังไม่ได้ใส่ Role');
+    suggestions.push('เริ่มต้น Prompt ด้วยการกำหนดบทบาท เช่น "คุณคือครูสอนวิทยาศาสตร์ที่ใจดี..."');
   }
 
-  // --- 3. CONTEXT (การให้บริบท) ---
-  const contextKeywords = ['สำหรับ', 'นักเรียน', 'เด็ก', 'ผู้เรียน', 'ระดับ', 'ประถม', 'มัธยม', 'มหาวิทยาลัย', 'งบประมาณ', 'สภาพแวดล้อม', 'สถานการณ์', 'บริบท'];
-  if (contextKeywords.some(k => text.includes(k))) {
-    context += 1;
-    whatWorked.push('มีการให้บริบท สภาพแวดล้อม หรือข้อมูลพื้นฐาน');
-  } else {
-    whatMissing.push('ยังไม่ได้ให้บริบทหรือข้อมูลแวดล้อมที่จำเป็น');
-    suggestions.push('เพิ่มบริบท เช่น "สำหรับเด็กประถม" หรือ "งบประมาณไม่เกิน..."');
+  // Check 4: Chain of Thought & Step-by-step
+  const cotKeywords = ['ทีละขั้นตอน', 'step-by-step', 'แสดงวิธีคิด', 'อธิบายเหตุผล', 'ลำดับขั้นตอน'];
+  const hasCot = cotKeywords.some(k => text.toLowerCase().includes(k));
+  if (hasCot) {
+    techniqueScore += 1;
+    whatWorked.push('มีการใช้เทคนิค Chain-of-Thought สั่งให้ AI แสดงวิธีคิดทีละขั้นตอน');
   }
 
-  // --- 4. TASK (การระบุภารกิจ) ---
-  const taskKeywords = ['ช่วย', 'จง', 'ขอ', 'สร้าง', 'เขียน', 'สรุป', 'วิเคราะห์', 'ออกแบบ', 'แปล', 'คำนวณ', 'อธิบาย', 'บอก'];
-  if (taskKeywords.some(k => text.includes(k))) {
-    task += 1;
-  }
-  if (charCount > 40) {
-    task += 1;
-    whatWorked.push('ระบุภารกิจหรือเป้าหมายชัดเจน');
-  } else {
-    whatMissing.push('ควรระบุภารกิจที่ต้องการให้ AI ทำอย่างเฉพาะเจาะจง');
+  // Check 5: Few-Shot Examples
+  const fewShotKeywords = ['ตัวอย่าง', ' pattern', 'แพทเทิร์น', ' input', ' output'];
+  const hasFewShot = fewShotKeywords.some(k => text.toLowerCase().includes(k));
+  if (hasFewShot) {
+    techniqueScore += 1;
+    whatWorked.push('มีการส่งตัวอย่าง (Few-Shot) ให้ AI เรียนรู้แนวทางการตอบ');
   }
 
-  // --- 5. CONSTRAINTS (การกำหนดข้อจำกัด) ---
-  const constraintKeywords = ['ห้าม', 'ไม่ต้อง', 'ไม่เอา', 'ไม่เกิน', 'เท่านั้น', 'จำกัด', 'เฉพาะ', 'เงื่อนไข'];
-  if (constraintKeywords.some(k => text.includes(k))) {
-    constraints += 2;
-    whatWorked.push('มีการกำหนดข้อจำกัด ข้อห้าม หรือขอบเขต');
-  } else {
-    whatMissing.push('ยังไม่ได้กำหนดข้อจำกัดหรือข้อห้าม');
-    suggestions.push('เพิ่มข้อจำกัด เช่น "ห้ามใช้ศัพท์เทคนิค" "ไม่เกิน 3 ข้อ"');
+  // Check 6: Negative constraints (ห้าม...)
+  if (text.includes('ห้าม') || text.includes('ไม่ต้อง') || text.includes('ไม่เอา')) {
+    completenessScore += 1;
+    whatWorked.push('มีการกำหนดข้อห้าม/ข้อจำกัด (Negative Prompting) เพื่อตัดข้อความส่วนเกิน');
   }
 
-  // --- 6. FORMAT (การกำหนดรูปแบบผลลัพธ์) ---
-  const formatKeywords = ['ตาราง', 'markdown', 'json', 'bullet', 'ข้อ', 'รูปแบบ', 'โครงสร้าง', 'คอลัมน์', 'list'];
-  if (formatKeywords.some(k => text.toLowerCase().includes(k))) {
-    format += 2;
-    whatWorked.push('มีการกำหนดรูปแบบผลลัพธ์ที่ต้องการ');
-  } else {
-    whatMissing.push('ยังไม่ได้ระบุรูปแบบผลลัพธ์ เช่น ตาราง หรือ Bullet Points');
-    suggestions.push('ระบุรูปแบบคำตอบ เช่น "ตอบเป็นตาราง Markdown" หรือ "สรุป 3 ข้อ"');
-  }
+  // Cap scores between 1 and 5
+  clarityScore = Math.min(5, Math.max(1, clarityScore));
+  completenessScore = Math.min(5, Math.max(1, completenessScore));
+  techniqueScore = Math.min(5, Math.max(1, techniqueScore));
+  qualityScore = Math.min(5, Math.max(1, Math.round((clarityScore + completenessScore + techniqueScore) / 3)));
 
-  // --- 7. REFINEMENT (การปรับแก้และทำซ้ำ) ---
-  // Heuristic: if prompt mentions iteration, multiple versions, or improvement
-  const refinementKeywords = ['ปรับ', 'แก้', 'ทำซ้ำ', 'ลองใหม่', 'พัฒนา', 'improve', 'refine', 'ตัวอย่าง', 'few-shot', 'step-by-step', 'ทีละขั้นตอน'];
-  if (refinementKeywords.some(k => text.toLowerCase().includes(k))) {
-    refinement += 1;
-  }
-  if (charCount > 120) {
-    refinement += 1;
-    whatWorked.push('Prompt มีรายละเอียดเพียงพอสำหรับการปรับปรุงต่อยอด');
-  } else {
-    whatMissing.push('Prompt ยังสั้น อาจต้องปรับแก้และทำซ้ำเพื่อผลลัพธ์ที่ดีขึ้น');
-    suggestions.push('ลองใช้เทคนิค Few-Shot หรือ Step-by-Step เพื่อปรับปรุง');
-  }
-
-  // Cap all scores between 1 and 5
-  clarity = Math.min(5, Math.max(1, clarity));
-  role = Math.min(5, Math.max(1, role));
-  context = Math.min(5, Math.max(1, context));
-  task = Math.min(5, Math.max(1, task));
-  constraints = Math.min(5, Math.max(1, constraints));
-  format = Math.min(5, Math.max(1, format));
-  refinement = Math.min(5, Math.max(1, refinement));
-
-  const totalScore = clarity + role + context + task + constraints + format + refinement;
+  const totalScore = clarityScore + completenessScore + techniqueScore + qualityScore;
 
   // Generate simulated AI Output based on stage and prompt quality
-  const simulatedOutput = generateSimulatedAIOutput(stage, text, totalScore, 35);
+  const simulatedOutput = generateSimulatedAIOutput(stage, text, totalScore);
 
   // Construct coaching feedback
   const feedback = {
@@ -150,21 +119,26 @@ function evaluateWithHeuristics(promptText, stage) {
     what_missing: whatMissing.length > 0 ? whatMissing.join(' • ') : 'ยังสามารถระบุข้อจำกัดเพิ่มเติมเพื่อให้ AI ทำงานได้เป๊ะยิ่งขึ้น',
     suggestion: suggestions.length > 0
       ? suggestions.join(' • ')
-      : (totalScore >= 28 ? 'Prompt ของคุณยอดเยี่ยมมาก! ลองท้าทายด่านถัดไปได้เลย' : 'ลองระบุเงื่อนไขเป็นข้อๆ และระบุรูปแบบผลลัพธ์ที่ต้องการให้ชัดเจนกว่านี้'),
+      : (totalScore >= 16 ? 'Prompt ของคุณยอดเยี่ยมมาก! ลองท้าทายด่านถัดไปได้เลย' : 'ลองระบุเงื่อนไขเป็นข้อๆ และระบุรูปแบบผลลัพธ์ที่ต้องการให้ชัดเจนกว่านี้'),
     hint_only: true
   };
 
   return {
-    scores: { clarity, role, context, task, constraints, format, refinement },
+    scores: {
+      clarity: clarityScore,
+      completeness: completenessScore,
+      technique: techniqueScore,
+      quality: qualityScore
+    },
     totalScore,
-    maxScore: 35,
+    maxScore: 20,
     feedback,
     aiOutput: simulatedOutput
   };
 }
 
 // Helper to simulate AI Output for the chat view
-function generateSimulatedAIOutput(stage, promptText, totalScore, maxScore) {
+function generateSimulatedAIOutput(stage, promptText, totalScore) {
   if (stage.stage_number === '0.1') {
     return `### สรุปประโยชน์ของ AI ในการศึกษา (สำหรับนักเรียน ม.ปลาย)
 
@@ -231,41 +205,27 @@ function calculateGrade(score) {
 
 // ----------------------------------------------------
 // 2. KKU IntelSphere API EVALUATION (OpenAI-compatible)
-//    AI ประเมิน 7 ด้านตาม Rubric Framework (รวม 35 คะแนน)
+//    AI ประเมิน 4 ด้าน ด้านละ 1-5 คะแนน รวม 20 คะแนน
 // ----------------------------------------------------
 async function evaluateWithLLM(promptText, stage, apiKey) {
-  const systemPrompt = `คุณคือ AI Evaluator ผู้เชี่ยวชาญด้าน Prompt Engineering ทำหน้าที่ประเมินทักษะการเขียน Prompt ของนักเรียนในเกม Prompt Battle
+  const systemPrompt = `คุณคือ AI Evaluator ประเมินทักษะ Prompt Engineering ของนักเรียนในเกม Prompt Battle
+โจทย์คือ: "${stage.problem_statement}"
+เงื่อนไขที่คาดหวัง: ${JSON.stringify(stage.expected_criteria)}
 
-📋 โจทย์ที่นักเรียนต้องทำ: "${stage.problem_statement}"
-📌 เงื่อนไขที่คาดหวัง: ${JSON.stringify(stage.expected_criteria)}
+จงประเมิน Prompt ของนักเรียน: "${promptText}"
 
-✍️ Prompt ของนักเรียน: "${promptText}"
-
-🧪 จงประเมิน Prompt นี้ตามเกณฑ์ 7 ด้าน (Researcher Rubric Framework) โดยให้คะแนนแต่ละด้าน 1-5 คะแนน:
-
-1. clarity (ความชัดเจน) — ใช้ภาษากระชับ ตรงประเด็น ไม่กำกวม
-2. role (การกำหนดบทบาท) — ระบุบทบาทหรือตัวตนให้ AI อย่างเหมาะสม
-3. context (การให้บริบท) — ให้ข้อมูลพื้นฐาน สภาพแวดล้อม หรือสถานการณ์แวดล้อม
-4. task (การระบุภารกิจ) — กำหนดเป้าหมายให้ AI อย่างเฉพาะเจาะจง
-5. constraints (การกำหนดข้อจำกัด) — ระบุขอบเขต ข้อห้าม หรือเงื่อนไข
-6. format (การกำหนดรูปแบบ) — ระบุโครงสร้างผลลัพธ์ที่ต้องการ
-7. refinement (การปรับแก้และทำซ้ำ) — แสดงแนวโน้มการปรับปรุง ทำซ้ำ หรือใช้เทคนิคขั้นสูง
-
-❗โปรดตอบกลับเป็น JSON แท้ๆ เท่านั้น ในรูปแบบนี้:
+โปรดตอบกลับเป็น JSON แท้ๆ เท่านั้น ในรูปแบบดังนี้:
 {
   "scores": {
     "clarity": <1-5>,
-    "role": <1-5>,
-    "context": <1-5>,
-    "task": <1-5>,
-    "constraints": <1-5>,
-    "format": <1-5>,
-    "refinement": <1-5>
+    "completeness": <1-5>,
+    "technique": <1-5>,
+    "quality": <1-5>
   },
   "feedback": {
-    "what_worked": "<สิ่งที่นักเรียนทำได้ดี ภาษาไทย>",
+    "what_worked": "<จุดที่นักเรียนทำได้ดี ภาษาไทย>",
     "what_missing": "<จุดที่ยังขาด ภาษาไทย>",
-    "suggestion": "<คำแนะนำสไตล์โค้ชชิ่ง ไม่เฉลยคำตอบ ภาษาไทย>"
+    "suggestion": "<คำแนะนำสั้นๆ สไตล์โค้ชชิ่ง ไม่เฉลยคำตอบ ภาษาไทย>"
   },
   "aiOutput": "<ผลลัพธ์ตัวอย่างที่ AI ควรตอบกลับจาก prompt นี้ ภาษาไทย>"
 }
@@ -298,20 +258,17 @@ async function evaluateWithLLM(promptText, stage, apiKey) {
   const parsed = JSON.parse(cleanJson);
 
   const s = parsed.scores;
-  const totalScore = (s.clarity || 0) + (s.role || 0) + (s.context || 0) + (s.task || 0) + (s.constraints || 0) + (s.format || 0) + (s.refinement || 0);
+  const totalScore = (s.clarity || 0) + (s.completeness || 0) + (s.technique || 0) + (s.quality || 0);
 
   return {
     scores: {
       clarity: s.clarity || 3,
-      role: s.role || 3,
-      context: s.context || 3,
-      task: s.task || 3,
-      constraints: s.constraints || 3,
-      format: s.format || 3,
-      refinement: s.refinement || 3
+      completeness: s.completeness || 3,
+      technique: s.technique || 3,
+      quality: s.quality || 3
     },
     totalScore,
-    maxScore: 35,
+    maxScore: 20,
     feedback: parsed.feedback || {
       what_worked: 'AI ได้ประเมินผลแล้ว',
       what_missing: '',

@@ -47,7 +47,7 @@ export default function StageList() {
   const clearedCount = miniStages.filter(s => {
     const attempts = getUserStageAttempts(s.id);
     const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
-    return highestScore >= 21;
+    return highestScore >= 12;
   }).length;
 
   const currentLevelIndex = Math.min(clearedCount, miniStages.length - 1);
@@ -207,7 +207,7 @@ export default function StageList() {
                 {miniStages.map((stage, idx) => {
                   const attempts = getUserStageAttempts(stage.id);
                   const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
-                  const isCleared = highestScore >= 21;
+                  const isCleared = highestScore >= 12;
                   const isCurrentActiveToken = idx === currentLevelIndex;
 
                   return (
@@ -241,7 +241,7 @@ export default function StageList() {
                             {stage.title}
                           </h3>
                           <span className="text-[10px] text-slate-500 font-mono block">
-                            {attempts.length}/3 attempts • คะแนนสูงสุด: {highestScore}/35
+                            {attempts.length}/3 attempts • คะแนนสูงสุด: {highestScore}/20
                           </span>
                         </div>
                       </div>
@@ -270,7 +270,7 @@ export default function StageList() {
                 {mainStages.map((stage) => {
                   const attempts = getUserStageAttempts(stage.id);
                   const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
-                  const isCleared = highestScore >= 21;
+                  const isCleared = highestScore >= 12;
 
                   return (
                     <div 
@@ -300,7 +300,7 @@ export default function StageList() {
                       <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
                         <span className="text-[10px] font-mono text-amber-700 font-bold flex items-center gap-1">
                           <Star size={12} className="fill-amber-500 text-amber-500" />
-                          {highestScore}/35
+                          {highestScore}/20
                         </span>
 
                         <button
