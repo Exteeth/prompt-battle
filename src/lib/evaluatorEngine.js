@@ -1,72 +1,76 @@
 // 🤖 PROMPT BATTLE EVALUATOR ENGINE
-// AI Evaluación Service with KKU IntelSphere API (OpenAI-compatible) + Offline Heuristic Fallback
+// AI Evaluation Service — KKU IntelSphere API (deepseek-v4-flash) + Offline Heuristic
 
 const KKU_BASE_URL = import.meta.env.VITE_KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
 const KKU_MODEL = 'deepseek-v4-flash';
+const API_TIMEOUT_MS = 15000; // 15s for production KKU API
 
 export async function evaluatePrompt({ promptText, stage, previousAttemptsCount = 0 }) {
   const apiKey = import.meta.env.VITE_KKU_API_KEY;
-  console.log('🔑 VITE_KKU_API_KEY present:', !!apiKey, apiKey ? `(${apiKey.slice(0, 8)}...)` : '(MISSING — using heuristic fallback)');
-  console.log('🔗 KKU_BASE_URL:', KKU_BASE_URL, '| Model:', KKU_MODEL);
+  console.log('🔑 VITE_KKU_API_KEY present:', !!apiKey);
 
   if (apiKey) {
     try {
       console.log('🤖 Calling KKU API...');
       const result = await evaluateWithLLM(promptText, stage, apiKey);
-      console.log('✅ KKU API SUCCESS — totalScore:', result.totalScore, '/', result.maxScore);
+      result.source = 'ai';
+      console.log('✅ KKU API SUCCESS — totalScore:', result.totalScore, '/ 20');
       return result;
     } catch (err) {
       console.error('❌ KKU API FAILED:', err.message);
-      console.error('❌ Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
     }
   }
 
-  console.log('🧠 Using heuristic evaluator (offline fallback)');
-  return evaluateWithHeuristics(promptText, stage);
+  // Fallback: heuristic scoring with NO mockup AI output
+  console.log('🧠 Heuristic scoring (no AI)');
+  const result = evaluateWithHeuristics(promptText, stage);
+  result.source = 'heuristic';
+  return result;
 }
 
+// ----------------------------------------------------
+// Heuristic evaluator (NO mockup — real scoring only)
+// ----------------------------------------------------
 function evaluateWithHeuristics(promptText, stage) {
   const text = promptText.trim();
   const charCount = text.length;
 
-  let clarityScore = 3;
-  let completenessScore = 3;
-  let techniqueScore = 2;
-  let qualityScore = 3;
-
-  let whatWorked = [];
-  let whatMissing = [];
-  let suggestions = [];
+  let clarityScore = 3, completenessScore = 3, techniqueScore = 2, qualityScore = 3;
+  let whatWorked = [], whatMissing = [], suggestions = [];
 
   if (charCount > 60) { clarityScore += 1; whatWorked.push('มีรายละเอียดคำสั่งชัดเจน'); }
-  else if (charCount < 25) { clarityScore -= 1; whatMissing.push('คำสั่งยังสั้นเกินไป ควรเพิ่มบริบทและเป้าหมายให้ชัดเจนขึ้น'); }
+  else if (charCount < 25) { clarityScore -= 1; whatMissing.push('คำสั่งสั้นเกินไป — เพิ่มบริบทและเป้าหมาย'); }
 
-  const formatKeywords = ['ตาราง', 'markdown', 'json', 'ข้อ', 'ข้อสั้น', ' bullet', 'รูปแบบ', 'โครงสร้าง'];
-  if (formatKeywords.some(k => text.toLowerCase().includes(k))) {
-    techniqueScore += 1; completenessScore += 1; whatWorked.push('มีการระบุรูปแบบ Output หรือโครงสร้างคำตอบที่ต้องการ');
+  const formatKw = ['ตาราง', 'markdown', 'json', 'ข้อ', 'รูปแบบ', 'โครงสร้าง', 'คอลัมน์'];
+  if (formatKw.some(k => text.toLowerCase().includes(k))) {
+    techniqueScore += 1; completenessScore += 1; whatWorked.push('ระบุรูปแบบ Output ชัดเจน');
   } else {
-    whatMissing.push('ยังไม่ได้ระบุรูปแบบผลลัพธ์ที่ชัดเจน เช่น ตาราง ข้อสั้นๆ หรือ Markdown');
-    suggestions.push('ลองเพิ่มคำสั่งระบุรูปแบบ เช่น "แสดงผลลัพธ์เป็นตาราง Markdown" หรือ "สรุปเป็น 3 ข้อ"');
+    whatMissing.push('ไม่ได้ระบุรูปแบบผลลัพธ์');
+    suggestions.push('ระบุรูปแบบ เช่น "ตอบเป็นตาราง Markdown" หรือ "สรุป 3 ข้อ"');
   }
 
-  const roleKeywords = ['คุณคือ', 'สวมบทบาท', 'บทบาท', 'หน้าที่', 'ในฐานะ', 'ครู', 'นักเขียน', 'เจ้าหน้าที่'];
-  if (roleKeywords.some(k => text.toLowerCase().includes(k))) {
-    techniqueScore += 1; whatWorked.push('มีการใช้เทคนิค Role Prompting (สวมบทบาท)');
+  const roleKw = ['คุณคือ', 'สวมบทบาท', 'ในฐานะ', 'บทบาท', 'คุณเป็น'];
+  if (roleKw.some(k => text.includes(k))) {
+    techniqueScore += 1; whatWorked.push('กำหนดบทบาทให้ AI (Role Prompting)');
   } else if (stage.problem_statement.includes('บทบาท') || stage.problem_statement.includes('คุณคือ')) {
-    whatMissing.push('โจทย์นี้เหมาะกับการกำหนด Role ให้ AI แต่คุณยังไม่ได้ใส่ Role');
-    suggestions.push('เริ่มต้น Prompt ด้วยการกำหนดบทบาท เช่น "คุณคือครูสอนวิทยาศาสตร์ที่ใจดี..."');
+    whatMissing.push('ควรกำหนดบทบาทให้ AI');
+    suggestions.push('เริ่มด้วย "คุณคือ..." เพื่อกำหนดบทบาท');
   }
 
-  const cotKeywords = ['ทีละขั้นตอน', 'step-by-step', 'แสดงวิธีคิด', 'อธิบายเหตุผล', 'ลำดับขั้นตอน'];
-  if (cotKeywords.some(k => text.toLowerCase().includes(k))) { techniqueScore += 1; whatWorked.push('มีการใช้เทคนิค Chain-of-Thought'); }
-  if (['ตัวอย่าง', ' pattern', 'แพทเทิร์น'].some(k => text.toLowerCase().includes(k))) { techniqueScore += 1; whatWorked.push('มีการส่งตัวอย่าง (Few-Shot)'); }
-  if (text.includes('ห้าม') || text.includes('ไม่ต้อง') || text.includes('ไม่เอา')) { completenessScore += 1; whatWorked.push('มีการกำหนดข้อห้าม/ข้อจำกัด'); }
+  if (['ทีละขั้นตอน', 'step-by-step', 'แสดงวิธีคิด'].some(k => text.toLowerCase().includes(k))) {
+    techniqueScore += 1; whatWorked.push('ใช้ Chain-of-Thought');
+  }
+  if (['ตัวอย่าง', 'pattern', 'แพทเทิร์น'].some(k => text.toLowerCase().includes(k))) {
+    techniqueScore += 1; whatWorked.push('ใช้ Few-Shot');
+  }
+  if (text.includes('ห้าม') || text.includes('ไม่ต้อง') || text.includes('ไม่เกิน') || text.includes('เท่านั้น')) {
+    completenessScore += 1; whatWorked.push('กำหนดข้อจำกัด/เงื่อนไข');
+  }
 
   clarityScore = Math.min(5, Math.max(1, clarityScore));
   completenessScore = Math.min(5, Math.max(1, completenessScore));
   techniqueScore = Math.min(5, Math.max(1, techniqueScore));
   qualityScore = Math.min(5, Math.max(1, Math.round((clarityScore + completenessScore + techniqueScore) / 3)));
-
   const totalScore = clarityScore + completenessScore + techniqueScore + qualityScore;
 
   return {
@@ -74,68 +78,63 @@ function evaluateWithHeuristics(promptText, stage) {
     totalScore,
     maxScore: 20,
     feedback: {
-      what_worked: whatWorked.length > 0 ? whatWorked.join(' • ') : 'เขียน Prompt ภาษาไทยเข้าใจได้ง่าย',
-      what_missing: whatMissing.length > 0 ? whatMissing.join(' • ') : 'ยังสามารถระบุข้อจำกัดเพิ่มเติมเพื่อให้ AI ทำงานได้เป๊ะยิ่งขึ้น',
-      suggestion: suggestions.length > 0 ? suggestions.join(' • ') : (totalScore >= 16 ? 'Prompt ของคุณยอดเยี่ยมมาก! ลองท้าทายด่านถัดไปได้เลย' : 'ลองระบุเงื่อนไขเป็นข้อๆ และระบุรูปแบบผลลัพธ์ที่ต้องการให้ชัดเจนกว่านี้'),
-      hint_only: true
+      what_worked: whatWorked.length > 0 ? whatWorked.join(' • ') : 'Prompt เข้าใจได้',
+      what_missing: whatMissing.length > 0 ? whatMissing.join(' • ') : '',
+      suggestion: suggestions.length > 0 ? suggestions.join(' • ') : (totalScore >= 16 ? 'ยอดเยี่ยม! ลองด่านต่อไปเลย' : 'ลองเพิ่มรูปแบบ/บทบาท/ข้อจำกัด'),
     },
-    aiOutput: generateSimulatedAIOutput(stage, text, totalScore)
+    aiOutput: null // NO mockup AI output
   };
 }
 
-function generateSimulatedAIOutput(stage, promptText, totalScore) {
-  if (stage.stage_number === '0.1') return `### สรุปประโยชน์ของ AI ในการศึกษา (สำหรับนักเรียน ม.ปลาย)\n\n1. **ช่วยสรุปเนื้อหาและอธิบายเรื่องยากให้ง่ายขึ้น:** สามารถย่อยบทเรียนที่ซับซ้อนให้เข้าใจง่ายตามสไตล์การเรียนของแต่ละคน\n2. **ช่วยเป็นผู้ช่วยติวส่วนตัวได้ 24 ชั่วโมง:** สามารถถามคำถาม ทบทวนข้อสอบ หรือขอตัวอย่างเพิ่มเติมได้ตลอดเวลา\n3. **ช่วยวางแผนการเรียนและจัดการเวลา:** ช่วยจัดตารางอ่านหนังสือและวางแผนเตรียมสอบเข้ามหาวิทยาลัยอย่างมีประสิทธิภาพ`;
-  if (stage.stage_number === '0.4' || stage.stage_number === '1') return `| ปี (ค.ศ./พ.ศ.) | บุคคลสำคัญ | เหตุการณ์สำคัญ |\n| :--- | :--- | :--- |\n| พุทธศตวรรษที่ 18 | สมเด็จพระบรมราชาธิราชที่ 1 (ขุนหลวงพะงั่ว) | ทรงรวบรวมอาณาจักรอยุธยาให้มีความมั่นคง |\n| ค.ศ. 1592 | สมเด็จพระนเรศวรมหาราช | ทรงกระทำยุทธหัตถีมีชัยชนะเหนือพระมหาอุปราชา |\n| ค.ศ. 1767 | สมเด็จพระเจ้าตากสินมหาราช | กอบกู้เอกราชและสถาปนากรุงธนบุรีหลังเสียกรุงครั้งที่ 2 |`;
-  if (stage.stage_number === '2' || stage.stage_number === '7') return `**บทละคร: แสงสุดท้ายกลางห้วงอวกาศ**\n\n*(บรรยากาศในห้องควบคุมสถานีอวกาศที่ไฟกำลังริบหรี่)*\n\n**นักบินอวกาศ:** "AI-99... สัญญาณเตือนปริมาณ **ออกซิเจน** ลดลงเหลือไม่ถึง 5% แล้วใช่ไหม?"\n\n**หุ่นยนต์ AI-99:** *(ส่งเสียงติ๊ดเบาๆ)* "ยืนยันครับกัปตัน แต่ระบบสำรองยังคงทำงานเพื่อส่งพิกัดของเราออกไป ท่ามกลางหมู่ **ดวงดาว** นับล้าน ตราบใดที่สัญญาณยังส่งออกไปได้ โปรดเก็บรักษา **ความหวัง** ไว้ครับ"\n\n**นักบินอวกาศ:** *(ยิ้มเจื่อนๆ มองออกไปนอกช่องหน้าต่าง)* "เธอคิดว่าจะมีใครบางคนในจักรวาลนี้ได้ยินเสียงของเราไหม AI-99?"`;
-  if (stage.stage_number === '3' || stage.stage_number === '8') return `### 1. อธิบายลอจิกการทำงาน (Step-by-step)\n1. ตรวจสอบว่า score ไม่อยู่ในช่วง 0 - 100 หรือไม่ (ถ้าน้อยกว่า 0 หรือมากกว่า 100 คืนค่า 'Invalid Score')\n2. ตรวจสอบช่วงคะแนนจากมากไปน้อย: >= 80 (A), >= 70 (B), >= 60 (C), >= 50 (D), และ < 50 (F)\n\n### 2. โค้ด JavaScript\n\`\`\`javascript\nfunction calculateGrade(score) {\n  if (typeof score !== 'number' || score < 0 || score > 100) {\n    return 'Invalid Score';\n  }\n  if (score >= 80) return 'A';\n  if (score >= 70) return 'B';\n  if (score >= 60) return 'C';\n  if (score >= 50) return 'D';\n  return 'F';\n}\n\`\`\``;
-  return `สวัสดีครับ! นี่คือผลลัพธ์จาก AI ประมวลผลตาม Prompt ของคุณ:\n\n> "${promptText.slice(0, 100)}${promptText.length > 100 ? '...' : ''}"\n\n**ผลลัพธ์:**\nระบบได้ทำการประมวลผลคำสั่งตามที่คุณระบุครบถ้วนเรียบร้อยแล้ว`;
-}
-
 // ----------------------------------------------------
-// 2. KKU API — deepseek-v4-flash (3s timeout)
+// KKU API Call (15s timeout)
 // ----------------------------------------------------
 async function evaluateWithLLM(promptText, stage, apiKey) {
-  const systemPrompt = `คุณคือ AI Evaluator ประเมินทักษะ Prompt Engineering ของนักเรียนในเกม Prompt Battle
+  const systemPrompt = `คุณคือ AI Evaluator ในเกม Prompt Battle ของนักเรียน
 โจทย์: "${stage.problem_statement}"
 เงื่อนไขที่คาดหวัง: ${JSON.stringify(stage.expected_criteria)}
 
-จงประเมิน Prompt: "${promptText}"
+ประเมิน Prompt นี้: "${promptText}"
 
-ตอบกลับเป็น JSON แท้ๆ เท่านั้น:
+ตอบ JSON เท่านั้น:
 {
   "scores": {"clarity":1-5,"completeness":1-5,"technique":1-5,"quality":1-5},
-  "feedback": {"what_worked":"...","what_missing":"...","suggestion":"..."},
-  "aiOutput":"..."
+  "feedback": {"what_worked":"สิ่งที่ทำได้ดี ภาษาไทย","what_missing":"จุดที่ขาด","suggestion":"คำแนะนำสไตล์โค้ช"},
+  "aiOutput":"ตัวอย่างผลลัพธ์ที่ AI ควรตอบ"
 }`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-  const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: KKU_MODEL, messages: [{ role: 'user', content: systemPrompt }] }),
-    signal: controller.signal
-  });
+  try {
+    const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: KKU_MODEL, messages: [{ role: 'user', content: systemPrompt }] }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
 
-  clearTimeout(timeoutId);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(`API ${response.status}: ${errText.slice(0, 150)}`);
+    }
 
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    throw new Error(`KKU API error ${response.status}: ${response.statusText}${errorBody ? ' — ' + errorBody.slice(0, 200) : ''}`);
+    const data = await response.json();
+    const raw = data.choices?.[0]?.message?.content || '';
+    const json = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(json);
+    const s = parsed.scores;
+
+    return {
+      scores: { clarity: s.clarity || 3, completeness: s.completeness || 3, technique: s.technique || 3, quality: s.quality || 3 },
+      totalScore: (s.clarity || 0) + (s.completeness || 0) + (s.technique || 0) + (s.quality || 0),
+      maxScore: 20,
+      feedback: parsed.feedback || {},
+      aiOutput: parsed.aiOutput || null
+    };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
   }
-
-  const data = await response.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-  const parsed = JSON.parse(cleanJson);
-  const s = parsed.scores;
-
-  return {
-    scores: { clarity: s.clarity || 3, completeness: s.completeness || 3, technique: s.technique || 3, quality: s.quality || 3 },
-    totalScore: (s.clarity || 0) + (s.completeness || 0) + (s.technique || 0) + (s.quality || 0),
-    maxScore: 20,
-    feedback: parsed.feedback || { what_worked: 'AI ได้ประเมินผลแล้ว', what_missing: '', suggestion: 'ลองปรับ Prompt ตามคำแนะนำดูนะครับ' },
-    aiOutput: parsed.aiOutput || 'ประมวลผลสำเร็จ'
-  };
 }
