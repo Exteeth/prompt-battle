@@ -1,15 +1,23 @@
 // Vercel Serverless Function — KKU API Proxy
 // Frontend calls /api/evaluate → this function calls KKU API
-// This avoids browser CORS/network blocking issues
 
 export default async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const KKU_BASE_URL = process.env.VITE_KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
   const KKU_API_KEY = process.env.VITE_KKU_API_KEY;
-  const KKU_MODEL = process.env.VITE_KKU_MODEL || 'deepseek-v4-flash';
+  const KKU_MODEL = 'deepseek-v4-flash';
 
   if (!KKU_API_KEY) {
     return res.status(500).json({ error: 'KKU_API_KEY not configured on server' });
@@ -19,7 +27,7 @@ export default async function handler(req, res) {
     const { systemPrompt } = req.body;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
       method: 'POST',

@@ -73,7 +73,7 @@ async function callKKUProxy(promptText, stage) {
     totalScore: (s.clarity || 0) + (s.completeness || 0) + (s.technique || 0) + (s.quality || 0),
     maxScore: 20,
     feedback: parsed.feedback || {},
-    aiOutput: parsed.aiOutput || null
+    aiOutput: parsed.aiOutput || ""
   };
 }
 
@@ -127,6 +127,6 @@ function evaluateWithHeuristics(promptText, stage) {
       what_missing: whatMissing.length > 0 ? whatMissing.join(' • ') : '',
       suggestion: suggestions.length > 0 ? suggestions.join(' • ') : (totalScore >= 16 ? 'ยอดเยี่ยม! ลองด่านต่อไปเลย' : 'ลองเพิ่มรูปแบบ/บทบาท/ข้อจำกัด'),
     },
-    aiOutput: null
+    aiOutput: ""
   };
 }
