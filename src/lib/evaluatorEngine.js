@@ -25,33 +25,33 @@ export async function evaluatePrompt({ promptText, stage, previousAttemptsCount 
 // 1. Call Vercel Serverless Proxy (/api/evaluate)
 // ----------------------------------------------------
 async function callKKUProxy(promptText, stage) {
-  const systemPrompt = `You are an AI evaluator for a Prompt Battle game. You must do 2 tasks:
+  const systemPrompt = `คุณคือ AI Evaluator ในเกม Prompt Battle ของนักเรียน ทุกคำตอบต้องเป็นภาษาไทยเท่านั้น
 
-TASK 1 — Execute the student's prompt EXACTLY as written:
+📋 งานที่ 1 — ตอบตามคำสั่งใน prompt ของนักเรียน:
 """
 ${promptText}
 """
-Respond as if you are the AI assistant receiving this prompt.
-- If the prompt only contains empty tags like [ROLE] [CONTEXT] without real content, respond: "Please add specific details to your prompt"
-- If the prompt gives actual instructions, follow them
-- Do NOT make up content. Do NOT use the stage context as the student's prompt.
+สวมบทบาทเป็น AI และตอบตามคำสั่งนี้
+- ถ้า prompt มีแต่แท็กเปล่า [ROLE] [CONTEXT] โดยไม่มีเนื้อหาจริง → ตอบ: "โปรดระบุรายละเอียดของคำถาม"
+- ถ้า prompt สั่งให้ทำอะไร → ทำตามนั้น
+- ห้ามแต่งเรื่องเอง ห้ามใช้ตัวอย่างสำเร็จรูป
 
-TASK 2 — Score the prompt based ONLY on what the student actually wrote:
-⚠️ CRITICAL: Score what the student ACTUALLY wrote, NOT what the stage expected.
-- If the student only pasted empty tags → score LOW (1-2)
-- If the student wrote actual instructions → score based on clarity, completeness, technique
+📋 งานที่ 2 — ให้คะแนนจากสิ่งที่นักเรียนเขียนจริงเท่านั้น:
+⚠️ สำคัญ: ให้คะแนนจากเนื้อหาจริงใน prompt เท่านั้น ไม่ใช่จากโจทย์
+- ถ้านักเรียนส่งแท็กเปล่า → คะแนนต่ำ (1-2)
+- ถ้านักเรียนเขียนคำสั่งจริง → คะแนนตามคุณภาพ
 
-Scoring rubric (1-5 each):
-- clarity: Is the instruction clear and specific? Empty tags = 1
-- completeness: Does it include context, task, and format? Empty tags = 1
-- technique: Are techniques like role-play, CoT, few-shot actually used? Empty tags = 1
-- quality: Would this prompt produce a good result? Empty tags = 1
+เกณฑ์ให้คะแนน (1-5):
+- clarity: คำสั่งชัดเจน? แท็กเปล่า = 1
+- completeness: มี context, task, format? แท็กเปล่า = 1
+- technique: ใช้ role/CoT/few-shot? แท็กเปล่า = 1
+- quality: ผลลัพธ์น่าจะดี? แท็กเปล่า = 1
 
-Respond with ONLY JSON:
+ตอบเป็น JSON เท่านั้น (ทุกช่องต้องเป็นภาษาไทย):
 {
   "scores": {"clarity":1-5,"completeness":1-5,"technique":1-5,"quality":1-5},
-  "feedback": {"what_worked":"...","what_missing":"...","suggestion":"..."},
-  "aiOutput":"Result from Task 1"
+  "feedback": {"what_worked":"ภาษาไทย","what_missing":"ภาษาไทย","suggestion":"ภาษาไทย"},
+  "aiOutput":"ภาษาไทย — ผลลัพธ์จากงานที่ 1"
 }`;
 
   const controller = new AbortController();
