@@ -15,7 +15,6 @@ export async function evaluatePrompt({ promptText, stage, previousAttemptsCount 
     console.error('❌ KKU API FAILED:', err.message);
   }
 
-  // Fallback: heuristic scoring (no AI, no mockup)
   console.log('🧠 Heuristic scoring (no AI)');
   const result = evaluateWithHeuristics(promptText, stage);
   result.source = 'heuristic';
@@ -26,17 +25,24 @@ export async function evaluatePrompt({ promptText, stage, previousAttemptsCount 
 // 1. Call Vercel Serverless Proxy (/api/evaluate)
 // ----------------------------------------------------
 async function callKKUProxy(promptText, stage) {
-  const systemPrompt = `คุณคือ AI Evaluator ในเกม Prompt Battle ของนักเรียน
-โจทย์: "${stage.problem_statement}"
-เงื่อนไขที่คาดหวัง: ${JSON.stringify(stage.expected_criteria)}
+  // IMPORTANT: AI must actually EXECUTE the student's prompt as aiOutput
+  const systemPrompt = `คุณต้องทำงาน 2 อย่างพร้อมกัน:
 
-ประเมิน Prompt: "${promptText}"
+📋 งานที่ 1 — ตอบตาม prompt ของนักเรียนจริงๆ:
+สวมบทบาทเป็น AI ผู้ช่วย แล้ว**ทำตามคำสั่งใน prompt นี้ทันที**: "${promptText}"
+- ถ้า prompt สั่งให้ตอบเรื่องอะไร ให้ตอบเรื่องนั้น
+- ถ้า prompt มีแต่ tags เปล่าๆ ไม่มีเนื้อหา ให้ตอบว่า "โปรดระบุรายละเอียดของคำถามหรือภารกิจที่ต้องการ"
+- ห้ามแต่งเรื่องเอง ห้ามใช้ตัวอย่างสำเร็จรูป
 
-ตอบ JSON เท่านั้น:
+📋 งานที่ 2 — ประเมิน prompt ตามเกณฑ์นี้:
+โจทย์เดิม: "${stage.problem_statement}"
+เกณฑ์: ${JSON.stringify(stage.expected_criteria)}
+
+ตอบเป็น JSON เท่านั้น:
 {
   "scores": {"clarity":1-5,"completeness":1-5,"technique":1-5,"quality":1-5},
-  "feedback": {"what_worked":"สิ่งที่ทำได้ดี ภาษาไทย","what_missing":"จุดที่ขาด","suggestion":"คำแนะนำ"},
-  "aiOutput":"ตัวอย่างผลลัพธ์ที่ AI ควรตอบ ภาษาไทย"
+  "feedback": {"what_worked":"ภาษาไทย","what_missing":"ภาษาไทย","suggestion":"ภาษาไทย"},
+  "aiOutput":"ผลลัพธ์จากงานที่ 1 (ตอบตาม prompt จริง)"
 }`;
 
   const controller = new AbortController();
@@ -87,7 +93,7 @@ function evaluateWithHeuristics(promptText, stage) {
   const formatKw = ['ตาราง', 'markdown', 'json', 'ข้อ', 'รูปแบบ', 'โครงสร้าง', 'คอลัมน์'];
   if (formatKw.some(k => text.toLowerCase().includes(k))) {
     techniqueScore += 1; completenessScore += 1; whatWorked.push('ระบุรูปแบบ Output');
-  } else { whatMissing.push('ไม่ได้ระบุรูปแบบผลลัพธ์'); suggestions.push('ลองระบุรูปแบบ เช่น "ตอบเป็นตาราง Markdown"'); }
+  } else { whatMissing.push('ไม่ได้ระบุรูปแบบผลลัพธ์'); }
 
   const roleKw = ['คุณคือ', 'สวมบทบาท', 'ในฐานะ', 'บทบาท', 'คุณเป็น'];
   if (roleKw.some(k => text.includes(k))) {
