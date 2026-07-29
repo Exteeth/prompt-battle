@@ -38,35 +38,13 @@ export default function StageSidebar({ currentStageId, onSelectStage, isOpen, on
         </div>
 
         {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-6">
-          {/* Section 1: Mini Tutorials */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-4">
           <div>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2 flex items-center gap-1.5 font-mono">
-              <BookOpen size={14} className="text-emerald-600" />
-              <span>Mini-Tutorials (ฝึกพื้นฐาน)</span>
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-1.5 font-mono">
+              <Swords size={15} className="text-amber-600" />
+              <span>รายการด่านแข่งขัน (Battle Stages)</span>
             </h3>
-            <div className="space-y-1">
-              {STAGES_DATA.filter(s => s.is_tutorial).map(stage => (
-                <StageItem
-                  key={stage.id}
-                  stage={stage}
-                  isActive={stage.id === currentStageId}
-                  onSelect={() => {
-                    onSelectStage(stage.id);
-                    if (window.innerWidth < 768) onClose();
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Section 2: Main Battle Stages */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2 flex items-center gap-1.5 font-mono">
-              <Swords size={14} className="text-amber-600" />
-              <span>Main Battle Stages (แข่งขัน)</span>
-            </h3>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {STAGES_DATA.filter(s => !s.is_tutorial).map(stage => (
                 <StageItem
                   key={stage.id}

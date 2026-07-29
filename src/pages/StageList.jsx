@@ -38,19 +38,18 @@ export default function StageList() {
     if (!newState) playPopSound();
   };
 
-  const miniStages = STAGES_DATA.filter(s => s.is_tutorial);
   const mainStages = STAGES_DATA.filter(s => !s.is_tutorial);
   const achievements = getUserAchievements();
   const roomLeaderboard = getLeaderboard(user.roomCode);
 
-  // Calculate student stats
-  const clearedCount = miniStages.filter(s => {
+  // Calculate student stats based on battle stages
+  const clearedCount = mainStages.filter(s => {
     const attempts = getUserStageAttempts(s.id);
     const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
     return highestScore >= 12;
   }).length;
 
-  const currentLevelIndex = Math.min(clearedCount, miniStages.length - 1);
+  const currentLevelIndex = Math.min(clearedCount, mainStages.length - 1);
   const totalUserStars = STAGES_DATA.reduce((sum, s) => {
     const attempts = getUserStageAttempts(s.id);
     const maxS = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
@@ -74,18 +73,18 @@ export default function StageList() {
       <nav 
         role="navigation"
         aria-label="แถบการนำทางหลัก"
-        className="h-16 border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 shadow-xs"
+        className="h-16 border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 shadow-xs"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <img
             src="/assets/logo.webp"
             alt="Prompt Battle Logo"
-            className="w-9 h-9 object-contain drop-shadow-sm hover:scale-105 transition-transform cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-sm hover:scale-105 transition-transform cursor-pointer"
             onClick={() => { playPopSound(); navigate('/stages'); }}
           />
           <div>
-            <span className="font-extrabold text-sm text-slate-900 block leading-tight">Prompt Battle</span>
-            <span className="text-[11px] text-slate-500">ห้องเรียน: <strong className="text-blue-600 font-mono">{user.roomCode}</strong></span>
+            <span className="font-extrabold text-xs sm:text-sm text-slate-900 block leading-tight">Prompt Battle</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-500">ห้องเรียน: <strong className="text-blue-600 font-mono">{user.roomCode}</strong></span>
           </div>
         </div>
 
@@ -105,18 +104,18 @@ export default function StageList() {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={handleSoundToggle}
             aria-label={muted ? 'เปิดเสียงเอฟเฟกต์' : 'ปิดเสียงเอฟเฟกต์'}
-            className="min-h-[40px] min-w-[40px] p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
+            className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
           >
             {muted ? <VolumeX size={17} className="text-rose-600" /> : <Volume2 size={17} className="text-blue-600" />}
           </button>
 
           <button
             onClick={() => { playPopSound(); setIsCheatSheetOpen(true); }}
-            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            className="min-h-[44px] px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <BookOpen size={15} className="text-blue-600" />
             <span className="hidden sm:inline">สูตรลับ Prompt</span>
@@ -125,7 +124,7 @@ export default function StageList() {
           <button
             onClick={handleLogout}
             aria-label="ออกจากระบบ"
-            className="min-h-[40px] min-w-[40px] p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+            className="min-h-[44px] min-w-[44px] p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
             title="ออกจากระบบ"
           >
             <LogOut size={17} />
@@ -134,36 +133,36 @@ export default function StageList() {
       </nav>
 
       {/* Main Container */}
-      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 py-4 sm:py-5 space-y-4">
+      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4">
         
         {/* Rich Interactive Mascot Hero Banner */}
         <CuteMascotHeroBanner
           username={user.username}
           studentId={user.studentId}
           clearedCount={clearedCount}
-          totalStages={miniStages.length}
-          onStartClick={() => navigate(`/play/${miniStages[currentLevelIndex].id}`)}
+          totalStages={mainStages.length}
+          onStartClick={() => navigate(`/play/${mainStages[currentLevelIndex].id}`)}
         />
 
-        {/* High-Density Tab Segmented Controller */}
-        <div className="flex items-center justify-between bg-slate-200/80 p-1 rounded-2xl border border-slate-300/80 text-xs font-bold">
-          <div className="flex items-center gap-1 w-full sm:w-auto">
+        {/* High-Density Tab Segmented Controller (Compact Mobile Horizontal Bar) */}
+        <div className="bg-slate-200/80 p-1 rounded-2xl border border-slate-300/80 text-xs font-bold overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1 w-full min-w-max">
             <button
               onClick={() => { playPopSound(); setActiveTab('stages'); }}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
                 activeTab === 'stages'
                   ? 'bg-white text-blue-700 shadow-sm font-extrabold'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
               }`}
             >
               <LayoutGrid size={15} />
-              <span>ด่านบทเรียน & แข่งขัน</span>
+              <span>ด่านแข่งขันเก็บคะแนน</span>
               {activeTab === 'stages' && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-blue-600 rounded-full" />}
             </button>
 
             <button
               onClick={() => { playPopSound(); setActiveTab('formula'); }}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
                 activeTab === 'formula'
                   ? 'bg-white text-blue-700 shadow-sm font-extrabold'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
@@ -176,7 +175,7 @@ export default function StageList() {
 
             <button
               onClick={() => { playPopSound(); setActiveTab('leaderboard'); }}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
                 activeTab === 'leaderboard'
                   ? 'bg-white text-blue-700 shadow-sm font-extrabold'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
@@ -189,134 +188,66 @@ export default function StageList() {
           </div>
         </div>
 
-        {/* TAB 1: STAGES MAP & BATTLES (Compact 2-Column Split View) */}
+        {/* TAB 1: BATTLES (Full Width Mobile-First Responsive Grid) */}
         {activeTab === 'stages' && (
-          <div key="tab-stages" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-fade-in">
-            
-            {/* Left 5 Columns: 3D Tutorial Island Map */}
-            <div className="lg:col-span-5 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
-                  <MapPin className="text-emerald-600" size={18} />
-                  <span>1. เกาะการเรียนรู้ (Tutorial Map)</span>
-                </div>
-                <span className="text-[11px] text-slate-500 font-mono">5 บทเรียน</span>
+          <div key="tab-stages" className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 animate-fade-in">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-sm sm:text-base font-extrabold text-slate-900">
+                <Swords className="text-amber-600" size={18} />
+                <span>ด่านแข่งขันเก็บคะแนน (Battle Arenas)</span>
               </div>
-
-              <div className="space-y-2.5">
-                {miniStages.map((stage, idx) => {
-                  const attempts = getUserStageAttempts(stage.id);
-                  const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
-                  const isCleared = highestScore >= 12;
-                  const isCurrentActiveToken = idx === currentLevelIndex;
-
-                  return (
-                    <button
-                      key={stage.id}
-                      onClick={() => { 
-                        if (isCleared) playStarTwinkleSound(); else playPopSound(); 
-                        navigate(`/play/${stage.id}`); 
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer group ${
-                        isCleared
-                          ? 'bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100/80'
-                          : isCurrentActiveToken
-                          ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-100'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-xs ${
-                          isCleared 
-                            ? 'bg-emerald-600 text-white' 
-                            : isCurrentActiveToken
-                            ? 'bg-blue-600 text-white animate-pulse'
-                            : 'bg-slate-700 text-white'
-                        }`}>
-                          {isCleared ? <CheckCircle size={18} /> : stage.stage_number}
-                        </div>
-
-                        <div className="min-w-0">
-                          <h3 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 truncate">
-                            {stage.title}
-                          </h3>
-                          <span className="text-[10px] text-slate-500 font-mono block">
-                            {attempts.length}/3 attempts • คะแนนสูงสุด: {highestScore}/20
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-1 font-mono text-xs font-bold text-amber-600">
-                        <Star size={13} className="fill-amber-500 text-amber-500" />
-                        <span>{highestScore}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <span className="text-[11px] sm:text-xs text-slate-500 font-mono">{mainStages.length} ด่านประลอง</span>
             </div>
 
-            {/* Right 7 Columns: Main Battle Arenas */}
-            <div className="lg:col-span-7 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
-                  <Swords className="text-amber-600" size={18} />
-                  <span>2. ด่านแข่งขันเก็บคะแนน (Battle Arenas)</span>
-                </div>
-                <span className="text-[11px] text-slate-500 font-mono">5 ด่านประลอง</span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+              {mainStages.map((stage) => {
+                const attempts = getUserStageAttempts(stage.id);
+                const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
+                const isCleared = highestScore >= 12;
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {mainStages.map((stage) => {
-                  const attempts = getUserStageAttempts(stage.id);
-                  const highestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.totalScore)) : 0;
-                  const isCleared = highestScore >= 12;
-
-                  return (
-                    <div 
-                      key={stage.id}
-                      className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between space-y-2.5 bg-slate-50/60 hover:bg-white hover:shadow-md ${
-                        isCleared ? 'border-emerald-300' : 'border-slate-200'
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 font-mono">
-                            Stage {stage.stage_number}
-                          </span>
-                          <span className="text-[10px] font-bold text-amber-800">
-                            {stage.difficulty}
-                          </span>
-                        </div>
-
-                        <h3 className="text-xs font-bold text-slate-900 line-clamp-1">
-                          {stage.title}
-                        </h3>
-                        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                          {stage.description}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-amber-700 font-bold flex items-center gap-1">
-                          <Star size={12} className="fill-amber-500 text-amber-500" />
-                          {highestScore}/20
+                return (
+                  <div 
+                    key={stage.id}
+                    className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3 bg-slate-50/70 hover:bg-white hover:shadow-md ${
+                      isCleared ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200'
+                    }`}
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] sm:text-[11px] font-black text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200 font-mono">
+                          Stage {stage.stage_number}
                         </span>
-
-                        <button
-                          onClick={() => { playPopSound(); navigate(`/play/${stage.id}`); }}
-                          className="min-h-[36px] px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>{attempts.length > 0 ? 'ท้าทายอีกครั้ง' : 'เริ่มลุย'}</span>
-                          <ArrowRight size={13} />
-                        </button>
+                        <span className="text-[10px] sm:text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                          {stage.difficulty}
+                        </span>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
 
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">
+                        {stage.title}
+                      </h3>
+                      <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {stage.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-2.5 border-t border-slate-200 flex items-center justify-between gap-2">
+                      <span className="text-xs font-mono text-amber-700 font-bold flex items-center gap-1">
+                        <Star size={13} className="fill-amber-500 text-amber-500" />
+                        {highestScore}/20
+                      </span>
+
+                      <button
+                        onClick={() => { playPopSound(); navigate(`/play/${stage.id}`); }}
+                        className="min-h-[44px] px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <span>{attempts.length > 0 ? 'ท้าทายอีกครั้ง' : 'เริ่มลุย'}</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

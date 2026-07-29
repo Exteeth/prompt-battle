@@ -38,8 +38,8 @@ export default function PlayStage() {
       return;
     }
 
-    const currentId = parseInt(stageId, 10) || 1;
-    const foundStage = STAGES_DATA.find(s => s.id === currentId) || STAGES_DATA[0];
+    const currentId = parseInt(stageId, 10) || 6;
+    const foundStage = STAGES_DATA.find(s => s.id === currentId) || STAGES_DATA.find(s => !s.is_tutorial) || STAGES_DATA[0];
     setStage(foundStage);
 
     // Fetch previous user attempts for this stage

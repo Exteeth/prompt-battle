@@ -131,7 +131,7 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
         )}
 
         <form onSubmit={handleSubmit} className="relative">
-          <div className="relative flex items-end bg-slate-50 rounded-2xl border-2 border-slate-300 focus-within:border-blue-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div className="relative flex items-end bg-slate-50 rounded-2xl border-2 border-slate-300 focus-within:border-blue-600 focus-within:bg-white transition-all shadow-sm">
             <textarea
               ref={textareaRef}
               value={prompt}
@@ -144,16 +144,17 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
                   : 'พิมพ์ Prompt คำสั่งของคุณที่นี่... (กด Enter เพื่อส่ง | Shift+Enter เพื่อขึ้นบรรทัดใหม่)'
               }
               rows={1}
-              className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-sm sm:text-base p-3.5 pr-24 resize-none focus:outline-none max-h-[180px] font-sans leading-relaxed min-h-[48px]"
+              className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-xs sm:text-base p-3 sm:p-3.5 pr-24 resize-none border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 max-h-[180px] font-sans leading-relaxed min-h-[48px]"
+              style={{ outline: 'none', boxShadow: 'none' }}
             />
 
             {/* Clear Text & Send Action Buttons */}
-            <div className="absolute right-2.5 bottom-2 flex items-center gap-1.5">
+            <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
               {prompt.length > 0 && !isLoading && (
                 <button
                   type="button"
                   onClick={clearPrompt}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
                   title="ล้างข้อความ"
                 >
                   <Trash2 size={16} />
@@ -163,7 +164,7 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
               <button
                 type="submit"
                 disabled={!prompt.trim() || isLoading || attemptsLeft <= 0}
-                className={`min-h-[40px] min-w-[40px] w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                className={`min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center transition-all ${
                   prompt.trim() && !isLoading && attemptsLeft > 0
                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 cursor-pointer active:scale-95'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
