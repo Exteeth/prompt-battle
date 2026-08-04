@@ -129,7 +129,7 @@ export default function Home() {
       <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl pointer-events-none animate-float" />
 
       {/* Top Header Navigation */}
-      <header className="h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between max-w-6xl mx-auto w-full z-10 bg-white/90 backdrop-blur-md shadow-xs">
+      <header className="h-16 border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between max-w-6xl mx-auto w-full z-10 bg-slate-900/90 backdrop-blur-md shadow-lg font-prompt">
         <div className="flex items-center gap-3">
           <img
             src="/assets/logo.webp"
@@ -137,12 +137,12 @@ export default function Home() {
             className="w-10 h-10 object-contain drop-shadow-sm hover:scale-105 transition-transform cursor-pointer"
           />
           <div className="flex flex-col">
-            <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
+            <span className="font-black text-base tracking-tight text-white flex items-center gap-1.5 font-kanit">
               <span>Prompt Battle</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
             </span>
-            <span className="text-[10px] text-blue-600 font-mono tracking-wider uppercase font-semibold">
-              AI Prompt Engineering Platform
+            <span className="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-semibold">
+              AI PROMPT ARCADE PLATFORM
             </span>
           </div>
         </div>
@@ -153,94 +153,94 @@ export default function Home() {
             setTab(tab === 'student' ? 'teacher' : 'student');
             setError('');
           }}
-          className="min-h-[44px] px-4 py-2 rounded-2xl text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 transition-all flex items-center gap-2 cursor-pointer shadow-xs hover:scale-105"
+          className="btn-arcade-cyan px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2 cursor-pointer"
         >
           {tab === 'student' ? (
             <>
-              <ShieldCheck size={16} className="text-amber-600" />
-              <span>โหมดครูผู้สอน</span>
+              <ShieldCheck size={16} className="text-black" />
+              <span>TEACHER MODE</span>
             </>
           ) : (
             <>
-              <GraduationCap size={16} className="text-blue-600" />
-              <span>โหมดนักเรียน</span>
+              <GraduationCap size={16} className="text-black" />
+              <span>STUDENT MODE</span>
             </>
           )}
         </button>
       </header>
 
       {/* Main Hero & Mascot Section */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 z-10">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 z-10 font-prompt">
         {/* Left Side: Animated Mascot Speech Bubble & Hero Description */}
         <div className="w-full lg:w-1/2 space-y-6 text-center lg:text-left">
           {/* Interactive Mascot Animated Speech Bubble Container */}
           <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
             <div className="relative group cursor-pointer shrink-0" onClick={triggerNextMascotMessage} title="กดที่ตัว Promptie เพื่อฟังคำแนะนำใหม่!">
               {/* Glowing Ambient Halo behind Mascot */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full blur-2xl opacity-40 animate-pulse pointer-events-none" />
+              <div className="absolute inset-0 bg-cyan-400/20 rounded-full blur-2xl opacity-60 animate-pulse pointer-events-none" />
 
               <img
                 src="/assets/mascot.webp"
                 alt="Promptie Mascot"
-                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl animate-mascot-pulse group-hover:scale-110 transition-transform duration-300 relative z-10"
+                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-2xl animate-mascot-pulse group-hover:scale-110 transition-transform duration-300 relative z-10"
               />
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-md flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded bg-yellow-400 text-black text-[10px] font-black shadow-md flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 font-mono">
                 <RefreshCw size={10} className="animate-spin" />
-                <span>แตะที่ผมสิ!</span>
+                <span>CLICK ME!</span>
               </span>
             </div>
 
             <div className="space-y-3 flex-1 min-w-0">
-              <div className="bg-white p-4.5 rounded-3xl border border-blue-200 shadow-md text-left transition-all relative overflow-hidden">
-                <p className={`text-xs sm:text-sm text-slate-800 font-bold leading-relaxed transition-opacity duration-200 ${isChangingMsg ? 'opacity-0' : 'opacity-100'}`}>
+              <div className="bg-slate-900 p-4.5 rounded-2xl border-2 border-cyan-400 shadow-xl text-left transition-all relative overflow-hidden">
+                <p className={`text-xs sm:text-sm text-slate-100 font-bold leading-relaxed transition-opacity duration-200 ${isChangingMsg ? 'opacity-0' : 'opacity-100'}`}>
                   {mascotMessages[mascotIndex]}
                 </p>
 
                 {/* Animated Dots indicator */}
-                <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-800">
                   {mascotMessages.map((_, i) => (
                     <span
                       key={i}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === mascotIndex ? 'w-5 bg-blue-600' : 'w-1.5 bg-slate-200'
+                        i === mascotIndex ? 'w-5 bg-pink-500' : 'w-1.5 bg-slate-700'
                       }`}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-                <span className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform">
-                  <BookOpen size={14} className="text-blue-600" />
-                  <span>บันทึกคะแนนด้วยรหัสนักเรียน</span>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-2 font-mono">
+                <span className="px-3 py-1.5 rounded bg-slate-900 border border-cyan-400/60 text-cyan-300 text-xs font-bold flex items-center gap-1.5">
+                  <BookOpen size={14} className="text-cyan-400" />
+                  <span>ID BASED SAVES</span>
                 </span>
-                <span className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform">
-                  <Sparkles size={14} className="text-amber-600 animate-spin-slow" />
-                  <span>AI Feedback ภาษาไทย</span>
+                <span className="px-3 py-1.5 rounded bg-slate-900 border border-yellow-400/60 text-yellow-300 text-xs font-bold flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-yellow-400 animate-spin-slow" />
+                  <span>THAI AI EVALUATOR</span>
                 </span>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight font-kanit">
               ห้องเรียนฝึกทักษะ <br />
-              <span className="text-blue-600 font-black">
-                Prompt Engineering
+              <span className="text-cyan-400 font-black">
+                Prompt Engineering Arcade
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg mx-auto lg:mx-0 font-prompt">
               ฝึกเขียนและปรับปรุงคำสั่งกับ AI สไตล์ Chatbot ระบบจดจำประวัติการเล่นและคะแนนเดิมด้วยรหัสนักเรียน
             </p>
           </div>
 
           {/* Classroom Photo */}
           <div className="pt-2 hidden sm:block">
-            <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-lg group bg-white">
+            <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl group bg-slate-900">
               <img
                 src="/assets/hero.webp"
                 alt="AI Classroom Learning"
-                className="w-full h-auto object-cover max-h-[220px] group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-auto object-cover max-h-[220px] group-hover:scale-105 transition-transform duration-500 opacity-90"
               />
             </div>
           </div>
@@ -390,8 +390,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="p-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white z-10">
-        Prompt Battle — Educational AI Workspace
+      <footer className="p-4 text-center text-xs text-slate-400 border-t border-slate-800 bg-slate-950 z-10 font-mono">
+        PROMPT BATTLE — EDUCATIONAL AI ARCADE WORKSPACE
       </footer>
     </div>
   );

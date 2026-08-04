@@ -68,12 +68,12 @@ export default function StageList() {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 text-slate-900 flex flex-col font-prompt">
+    <div className="min-h-[100dvh] bg-[#0b0f19] text-white flex flex-col font-prompt">
       {/* High-Density Top Navigation Bar */}
       <nav 
         role="navigation"
         aria-label="แถบการนำทางหลัก"
-        className="h-16 border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 shadow-xs"
+        className="h-16 border-b border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur-md z-30 shadow-lg"
       >
         <div className="flex items-center gap-2.5">
           <img
@@ -83,22 +83,22 @@ export default function StageList() {
             onClick={() => { playPopSound(); navigate('/stages'); }}
           />
           <div>
-            <span className="font-extrabold text-xs sm:text-sm text-slate-900 block leading-tight">Prompt Battle</span>
-            <span className="text-[10px] sm:text-[11px] text-slate-500">ห้องเรียน: <strong className="text-blue-600 font-mono">{user.roomCode}</strong></span>
+            <span className="font-black text-xs sm:text-sm text-white block leading-tight font-kanit">Prompt Battle</span>
+            <span className="text-[10px] sm:text-[11px] text-cyan-400 font-mono">CLASS: <strong className="text-yellow-300 font-mono">{user.roomCode}</strong></span>
           </div>
         </div>
 
         {/* Compact User Level Status Pill */}
-        <div className="hidden md:flex items-center gap-4 bg-slate-100/80 px-3.5 py-1.5 rounded-2xl border border-slate-200 text-xs">
-          <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+        <div className="hidden md:flex items-center gap-4 bg-slate-950 px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
+          <span className="font-black text-white flex items-center gap-1.5">
             👤 <span>{user.username}</span>
-            <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-mono">
-              Lvl {clearedCount + 1}
+            <span className="text-[10px] bg-cyan-400 text-black font-black px-2 py-0.5 rounded font-mono">
+              LVL 0{clearedCount + 1}
             </span>
           </span>
-          <span className="text-slate-300">|</span>
-          <span className="font-mono font-bold text-amber-600 flex items-center gap-1">
-            <Star size={13} className="fill-amber-500 text-amber-500" />
+          <span className="text-slate-700">|</span>
+          <span className="font-mono font-black text-yellow-300 flex items-center gap-1">
+            <Star size={13} className="fill-yellow-400 text-yellow-400" />
             <span>{totalUserStars} PTS</span>
           </span>
         </div>
@@ -108,23 +108,23 @@ export default function StageList() {
           <button
             onClick={handleSoundToggle}
             aria-label={muted ? 'เปิดเสียงเอฟเฟกต์' : 'ปิดเสียงเอฟเฟกต์'}
-            className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
+            className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
           >
-            {muted ? <VolumeX size={17} className="text-rose-600" /> : <Volume2 size={17} className="text-blue-600" />}
+            {muted ? <VolumeX size={17} className="text-rose-400" /> : <Volume2 size={17} className="text-cyan-400" />}
           </button>
 
           <button
             onClick={() => { playPopSound(); setIsCheatSheetOpen(true); }}
-            className="min-h-[44px] px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            className="btn-arcade-cyan min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer font-mono"
           >
-            <BookOpen size={15} className="text-blue-600" />
-            <span className="hidden sm:inline">สูตรลับ Prompt</span>
+            <BookOpen size={15} className="text-black" />
+            <span className="hidden sm:inline">FORMULA CHEAT SHEET</span>
           </button>
 
           <button
             onClick={handleLogout}
             aria-label="ออกจากระบบ"
-            className="min-h-[44px] min-w-[44px] p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+            className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
             title="ออกจากระบบ"
           >
             <LogOut size={17} />
@@ -133,7 +133,7 @@ export default function StageList() {
       </nav>
 
       {/* Main Container */}
-      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4">
+      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4 font-prompt">
         
         {/* Rich Interactive Mascot Hero Banner */}
         <CuteMascotHeroBanner
@@ -144,46 +144,43 @@ export default function StageList() {
           onStartClick={() => navigate(`/play/${mainStages[currentLevelIndex].id}`)}
         />
 
-        {/* High-Density Tab Segmented Controller (Compact Mobile Horizontal Bar) */}
-        <div className="bg-slate-200/80 p-1 rounded-2xl border border-slate-300/80 text-xs font-bold overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1 w-full min-w-max">
+        {/* High-Density Tab Segmented Controller */}
+        <div className="bg-slate-900 p-1.5 rounded-xl border-2 border-slate-800 text-xs font-black overflow-x-auto scrollbar-none font-mono">
+          <div className="flex items-center gap-1.5 w-full min-w-max">
             <button
               onClick={() => { playPopSound(); setActiveTab('stages'); }}
-              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
+              className={`flex-1 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer uppercase ${
                 activeTab === 'stages'
-                  ? 'bg-white text-blue-700 shadow-sm font-extrabold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                  ? 'btn-arcade-cyan text-black'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
               <LayoutGrid size={15} />
-              <span>ด่านแข่งขันเก็บคะแนน</span>
-              {activeTab === 'stages' && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-blue-600 rounded-full" />}
+              <span>BATTLES MAP</span>
             </button>
 
             <button
               onClick={() => { playPopSound(); setActiveTab('formula'); }}
-              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
+              className={`flex-1 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer uppercase ${
                 activeTab === 'formula'
-                  ? 'bg-white text-blue-700 shadow-sm font-extrabold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                  ? 'btn-arcade-yellow text-black font-black'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Zap size={15} className="text-amber-500" />
-              <span>คลังสูตรลับ 7 ด้าน</span>
-              {activeTab === 'formula' && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-amber-500 rounded-full" />}
+              <Zap size={15} className="text-yellow-400" />
+              <span>7 PROMPT FORMULAS</span>
             </button>
 
             <button
               onClick={() => { playPopSound(); setActiveTab('leaderboard'); }}
-              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
+              className={`flex-1 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer uppercase ${
                 activeTab === 'leaderboard'
-                  ? 'bg-white text-blue-700 shadow-sm font-extrabold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                  ? 'btn-arcade-pink text-white font-black'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Trophy size={15} className="text-amber-500" />
-              <span>อันดับ & เหรียญรางวัล</span>
-              {activeTab === 'leaderboard' && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-amber-500 rounded-full" />}
+              <Trophy size={15} className="text-yellow-300" />
+              <span>HIGH SCORES & BADGES</span>
             </button>
           </div>
         </div>
@@ -253,13 +250,13 @@ export default function StageList() {
 
         {/* TAB 2: PROMPT FORMULA CHEAT SHEET (คลังสูตรลับ 7 ด้าน) — color-coded */}
         {activeTab === 'formula' && (
-          <div key="tab-formula" className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-sm sm:text-base font-extrabold text-slate-900">
-                <Zap className="text-amber-500 fill-amber-400" size={20} />
+          <div key="tab-formula" className="arcade-card p-4 sm:p-6 space-y-4 animate-fade-in border-4 border-cyan-400 bg-slate-900 text-white font-prompt">
+            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3 font-mono">
+              <div className="flex items-center gap-2 text-sm sm:text-base font-black text-yellow-300">
+                <Zap className="text-yellow-400 fill-yellow-400" size={20} />
                 <span>คลังสูตรลับ & เกณฑ์ประเมินการเขียน Prompt 7 ด้าน</span>
               </div>
-              <span className="text-xs text-slate-500">แตะการ์ดเพื่อดูตัวอย่างประโยค</span>
+              <span className="text-xs text-cyan-400">แตะการ์ดเพื่อดูตัวอย่างประโยค</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -271,28 +268,28 @@ export default function StageList() {
                   <div
                     key={card.id}
                     onClick={() => { playPopSound(); setSelectedFormulaCard(isSelected ? null : card.id); }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${card.bgLight} ${
+                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-2 bg-slate-950/80 ${
                       isSelected
-                        ? `${card.bgLight} ${card.borderSelect} shadow-md ${card.ring} ring-2`
-                        : `${card.border} ${card.bgHover} hover:border-${card.color}-300`
+                        ? `border-cyan-400 shadow-lg shadow-cyan-400/20 ring-2 ring-cyan-400`
+                        : `border-slate-800 hover:border-cyan-400`
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-lg ${card.iconBg} ${card.iconText} flex items-center justify-center shrink-0`}>
+                      <div className="w-8 h-8 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-400 flex items-center justify-center shrink-0">
                         <IconComp size={18} />
                       </div>
-                      <h3 className="text-xs font-bold text-slate-900">
+                      <h3 className="text-xs font-black text-white font-kanit">
                         {card.title}
                       </h3>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-slate-300 leading-relaxed font-prompt">
                       {card.desc}
                     </p>
 
                     {isSelected && (
-                      <div className={`pt-2 border-t ${card.border} text-[11px] ${card.iconText} ${card.bgLight}/80 p-2.5 rounded-lg`}>
-                        <strong className={`block ${card.iconText} font-bold mb-0.5`}>ตัวอย่างประโยค:</strong>
+                      <div className="pt-2 border-t border-cyan-400/50 text-xs text-cyan-200 bg-slate-900 p-2.5 rounded-lg font-mono">
+                        <strong className="block text-yellow-300 font-bold mb-0.5 font-sans">ตัวอย่างประโยค:</strong>
                         <span>"{card.example}"</span>
                       </div>
                     )}
@@ -305,59 +302,58 @@ export default function StageList() {
 
         {/* TAB 3: LEADERBOARD & ACHIEVEMENTS */}
         {activeTab === 'leaderboard' && (
-          <div key="tab-leaderboard" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-fade-in">
+          <div key="tab-leaderboard" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start animate-fade-in font-prompt">
             
             {/* Left 6 Columns: Top Class Leaderboard with podium styling */}
-            <div className="lg:col-span-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
-                  <Crown size={18} className="text-amber-500 fill-amber-400" />
-                  <span>อันดับคะแนนในห้องเรียน ({user.roomCode})</span>
+            <div className="lg:col-span-6 arcade-card p-4 sm:p-5 border-4 border-cyan-400 bg-slate-900 text-white space-y-4">
+              <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3 font-mono">
+                <div className="flex items-center gap-2 text-sm font-black text-yellow-300">
+                  <Crown size={18} className="text-yellow-400 fill-yellow-400" />
+                  <span>CLASS HIGH SCORES ({user.roomCode})</span>
                 </div>
 
                 <button
                   onClick={() => { playPopSound(); navigate('/leaderboard'); }}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-cyan-400 hover:text-cyan-300 font-black flex items-center gap-1 cursor-pointer"
                 >
-                  <span>ดูเต็มหน้า</span>
+                  <span>FULL PAGE</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 font-mono">
                 {roomLeaderboard.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-4 text-center">ยังไม่มีข้อมูลอันดับในห้องเรียนนี้</p>
+                  <p className="text-xs text-slate-400 py-4 text-center">ยังไม่มีข้อมูลอันดับในห้องเรียนนี้</p>
                 ) : (
                   roomLeaderboard.slice(0, 5).map((student, rankIdx) => {
                     const isMe = student.userId === user.userId;
-                    // Podium-specific styling for top 3
                     const podiumStyles = [
-                      { bg: 'bg-amber-50', border: 'border-amber-400', badge: '🥇', shadow: 'shadow-amber-200/50', text: 'text-amber-950' },
-                      { bg: 'bg-slate-100', border: 'border-slate-300', badge: '🥈', shadow: 'shadow-slate-200/50', text: 'text-slate-800' },
-                      { bg: 'bg-amber-100/50', border: 'border-amber-700/30', badge: '🥉', shadow: 'shadow-amber-100/50', text: 'text-amber-950' },
+                      { bg: 'bg-yellow-950/80', border: 'border-yellow-400', badge: '🥇', text: 'text-yellow-300' },
+                      { bg: 'bg-slate-800/80', border: 'border-slate-400', badge: '🥈', text: 'text-slate-200' },
+                      { bg: 'bg-amber-950/80', border: 'border-amber-600', badge: '🥉', text: 'text-amber-300' },
                     ];
                     const podium = rankIdx < 3 ? podiumStyles[rankIdx] : null;
                     const baseClasses = podium 
-                      ? `${podium.bg} ${podium.border} shadow-sm ${podium.shadow}`
-                      : 'bg-slate-50 border-slate-200 text-slate-800';
+                      ? `${podium.bg} ${podium.border}`
+                      : 'bg-slate-950 border-slate-800 text-white';
 
                     return (
                       <div
                         key={student.userId}
                         className={`p-3 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                          isMe ? 'ring-2 ring-blue-300 font-bold' : ''
+                          isMe ? 'ring-2 ring-cyan-400 font-black' : ''
                         } ${baseClasses}`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="font-mono font-black text-sm min-w-[24px]">
                             {podium ? podium.badge : `#${rankIdx + 1}`}
                           </span>
-                          <span className={`truncate max-w-[140px] font-bold ${podium ? podium.text : 'text-slate-800'}`}>
+                          <span className={`truncate max-w-[140px] font-bold ${podium ? podium.text : 'text-white'}`}>
                             {student.username} {isMe ? '(คุณ)' : ''}
                           </span>
                         </div>
 
-                        <div className="font-mono font-extrabold text-amber-600">
+                        <div className="font-mono font-extrabold text-yellow-300">
                           {student.totalPoints} <span className="text-[10px] text-slate-400 font-normal">PTS</span>
                         </div>
                       </div>
@@ -368,14 +364,14 @@ export default function StageList() {
             </div>
 
             {/* Right 6 Columns: Achievements Badges with lock states */}
-            <div className="lg:col-span-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
-                  <Medal size={18} className="text-amber-600" />
-                  <span>เหรียญรางวัลสะสมของคุณ</span>
+            <div className="lg:col-span-6 arcade-card p-4 sm:p-5 border-4 border-cyan-400 bg-slate-900 text-white space-y-4">
+              <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3 font-mono">
+                <div className="flex items-center gap-2 text-sm font-black text-yellow-300">
+                  <Medal size={18} className="text-yellow-400" />
+                  <span>BADGES UNLOCKED</span>
                 </div>
-                <span className="text-xs text-slate-500 font-mono">
-                  {achievements.filter(a => a.unlocked).length}/{achievements.length} ปลดล็อก
+                <span className="text-xs text-cyan-400 font-mono">
+                  {achievements.filter(a => a.unlocked).length}/{achievements.length} UNLOCKED
                 </span>
               </div>
 
@@ -384,32 +380,31 @@ export default function StageList() {
                   <div
                     key={ach.id}
                     onClick={() => { if (ach.unlocked) playStarTwinkleSound(); else playPopSound(); }}
-                    className={`p-3 rounded-xl border transition-all flex items-start gap-2.5 cursor-pointer relative ${
+                    className={`p-3 rounded-xl border-2 transition-all flex items-start gap-2.5 cursor-pointer relative ${
                       ach.unlocked
-                        ? 'bg-amber-50/80 border-amber-200 shadow-xs hover:shadow-md'
-                        : 'bg-slate-50 border-slate-200 opacity-60 hover:opacity-80'
+                        ? 'bg-yellow-950/60 border-yellow-400 text-white'
+                        : 'bg-slate-950 border-slate-800 opacity-60 hover:opacity-80 text-slate-400'
                     }`}
                   >
-                    {/* Lock badge overlay for locked achievements */}
                     {!ach.unlocked && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-200/90 flex items-center justify-center">
-                        <Lock size={11} className="text-slate-500" />
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded bg-slate-800 flex items-center justify-center border border-slate-700">
+                        <Lock size={11} className="text-slate-400" />
                       </div>
                     )}
 
-                    <span className={`text-xl shrink-0 p-1.5 rounded-lg border ${
+                    <span className={`text-xl shrink-0 p-1.5 rounded border ${
                       ach.unlocked
-                        ? 'bg-white border-amber-200'
-                        : 'bg-slate-100 border-slate-200'
+                        ? 'bg-slate-900 border-yellow-400'
+                        : 'bg-slate-900 border-slate-800'
                     }`} aria-hidden="true">
                       {ach.icon}
                     </span>
                     <div className="space-y-0.5 min-w-0">
-                      <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1 truncate">
+                      <h3 className="text-xs font-bold text-white flex items-center gap-1 truncate font-kanit">
                         <span>{ach.label}</span>
-                        {ach.unlocked && <CheckCircle size={11} className="text-emerald-600 shrink-0" />}
+                        {ach.unlocked && <CheckCircle size={11} className="text-green-400 shrink-0" />}
                       </h3>
-                      <p className="text-[10px] text-slate-600 line-clamp-2 leading-tight">
+                      <p className="text-[10px] text-slate-300 line-clamp-2 leading-tight font-prompt">
                         {ach.desc}
                       </p>
                     </div>

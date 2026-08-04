@@ -59,7 +59,7 @@ export default function ChatMessage({ message, isLatest, isThinking }) {
           </div>
 
           {/* AI Output Content */}
-          <div className="text-xs sm:text-base text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="text-xs sm:text-base text-slate-100 leading-relaxed whitespace-pre-wrap font-sans bg-slate-900 p-4 rounded-xl border-2 border-cyan-400 shadow-xl">
             {message.aiOutput}
           </div>
 

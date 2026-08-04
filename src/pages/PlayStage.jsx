@@ -167,16 +167,21 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
   if (!stage) return null;
 
   return (
-    <div className="flex h-[100dvh] bg-slate-50 text-slate-900 font-prompt overflow-hidden">
-      {/* Collapsible Left Stage Navigation Sidebar */}
+    <div className="flex h-[100dvh] bg-[#0b0f19] text-white overflow-hidden relative font-prompt">
+      {/* Skip to Main Content Link */}
+      <a href="#chat-stream" className="skip-link font-mono">
+        ข้ามไปที่บริเวณพิมพ์ Prompt (Skip to Chat)
+      </a>
+
+      {/* Left Collapsible Drawer Sidebar */}
       <StageSidebar
-        currentStageId={stage.id}
+        currentStageId={stage?.id}
         onSelectStage={(id) => navigate(`/play/${id}`)}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Main Chat Parody Container */}
+      {/* Center Main Chat Panel Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
         {/* Top Header */}
         <ChatHeader
@@ -189,14 +194,14 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         />
 
         {/* Problem Statement Banner / Accordion with Mascot Mini Widget */}
-        <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 shrink-0 shadow-xs">
-          <div className="max-w-4xl mx-auto">
+        <div className="bg-slate-900 border-b-2 border-slate-800 px-3 sm:px-6 py-2.5 shrink-0 shadow-lg">
+          <div className="max-w-4xl mx-auto font-prompt">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setShowCriteriaAccordion(!showCriteriaAccordion)}
-                className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-blue-700 transition-colors min-h-[36px] cursor-pointer"
+                className="flex items-center gap-2 text-xs font-black text-cyan-300 hover:text-white transition-colors min-h-[36px] cursor-pointer font-mono"
               >
-                <FileText size={16} className="text-blue-600 shrink-0" />
+                <FileText size={16} className="text-cyan-400 shrink-0" />
                 <span className="truncate">คำอธิบายโจทย์ & เงื่อนไขบังคับ</span>
                 {showCriteriaAccordion ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
@@ -204,23 +209,23 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
               {/* Prompt Cheat Sheet Button */}
               <button
                 onClick={() => { playPopSound(); setIsCheatSheetOpen(true); }}
-                className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                className="btn-arcade-cyan px-3 py-1 text-xs font-black flex items-center gap-1.5 cursor-pointer shrink-0 font-mono"
               >
-                <BookOpen size={13} className="text-blue-600" />
-                <span>ดูสูตรลับ Prompt</span>
+                <BookOpen size={13} className="text-black" />
+                <span>CHEAT SHEET</span>
               </button>
             </div>
 
             {showCriteriaAccordion && (
-              <div className="mt-2.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs text-slate-700 animate-slide-up">
-                <p className="font-medium text-slate-900 whitespace-pre-wrap leading-relaxed">
+              <div className="mt-2.5 p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-200 animate-slide-up">
+                <p className="font-bold text-white whitespace-pre-wrap leading-relaxed">
                   {stage.problem_statement}
                 </p>
 
                 {stage.constraints && stage.constraints.length > 0 && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <strong className="text-amber-800 block mb-1">เงื่อนไขบังคับ:</strong>
-                    <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                  <div className="pt-2 border-t border-slate-800">
+                    <strong className="text-yellow-300 block mb-1 font-mono">เงื่อนไขบังคับ:</strong>
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-300">
                       {stage.constraints.map((c, i) => (
                         <li key={i}>{c}</li>
                       ))}
