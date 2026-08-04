@@ -190,13 +190,13 @@ export default function StageList() {
 
         {/* TAB 1: BATTLES (Full Width Mobile-First Responsive Grid) */}
         {activeTab === 'stages' && (
-          <div key="tab-stages" className="glass-card-playful p-5 sm:p-6 space-y-5 animate-fade-in border-3 border-blue-200">
-            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 font-kanit">
-              <div className="flex items-center gap-2.5 text-base sm:text-lg font-black text-slate-900">
-                <Swords className="text-amber-500 fill-amber-400 animate-bounce" size={22} />
+          <div key="tab-stages" className="arcade-card p-5 sm:p-6 space-y-5 animate-fade-in border-4 border-cyan-400">
+            <div className="flex items-center justify-between border-b-2 border-slate-700/80 pb-3 font-kanit">
+              <div className="flex items-center gap-2.5 text-base sm:text-lg font-black text-cyan-300">
+                <Swords className="text-yellow-400 fill-yellow-400 animate-bounce" size={22} />
                 <span>ด่านแข่งขันเก็บคะแนน (Battle Arenas)</span>
               </div>
-              <span className="text-xs text-blue-700 bg-blue-50 px-3 py-1 rounded-full font-black font-mono border border-blue-200">{mainStages.length} ด่านประลอง</span>
+              <span className="text-xs text-cyan-300 bg-slate-900 px-3 py-1 rounded font-black font-mono border border-cyan-400">{mainStages.length} BATTLES AVAILABLE</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -208,39 +208,39 @@ export default function StageList() {
                 return (
                   <div 
                     key={stage.id}
-                    className={`p-4.5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-3 pedestal-3d ${
-                      isCleared ? 'pedestal-3d-cleared bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300' : 'bg-white border-slate-200'
+                    className={`p-4.5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-3 arcade-card-hover ${
+                      isCleared ? 'bg-slate-900 border-green-400 shadow-green-400/20' : 'bg-slate-900 border-slate-700'
                     }`}
                   >
                     <div className="space-y-2 font-prompt">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-blue-700 bg-blue-100 px-3 py-0.5 rounded-xl border border-blue-300 font-mono">
-                          Stage {stage.stage_number}
+                      <div className="flex items-center justify-between font-mono">
+                        <span className="text-xs font-black text-cyan-300 bg-cyan-950 px-3 py-0.5 rounded border border-cyan-400">
+                          STAGE 0{stage.stage_number}
                         </span>
-                        <span className="text-xs font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-xl border border-amber-300">
+                        <span className="text-xs font-black text-yellow-300 bg-yellow-950 px-2.5 py-0.5 rounded border border-yellow-400">
                           {stage.difficulty}
                         </span>
                       </div>
 
-                      <h3 className="text-sm font-extrabold text-slate-900 line-clamp-1 font-kanit">
+                      <h3 className="text-sm font-extrabold text-white line-clamp-1 font-kanit">
                         {stage.title}
                       </h3>
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                         {stage.description}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between gap-2 font-prompt">
-                      <span className="text-xs font-mono text-amber-700 font-black flex items-center gap-1 bg-amber-100/80 px-2.5 py-1 rounded-xl border border-amber-200">
-                        <Star size={14} className="fill-amber-400 text-amber-500" />
-                        {highestScore}/20
+                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2 font-prompt">
+                      <span className="text-xs font-mono text-yellow-300 font-black flex items-center gap-1 bg-yellow-950/80 px-2.5 py-1 rounded border border-yellow-400">
+                        <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                        {highestScore}/20 PTS
                       </span>
 
                       <button
                         onClick={() => { playPopSound(); navigate(`/play/${stage.id}`); }}
-                        className={`${isCleared ? 'btn-3d-emerald' : 'btn-3d-blue'} min-h-[44px] px-4 py-2 font-black rounded-xl text-xs flex items-center gap-2 cursor-pointer font-kanit`}
+                        className={`${isCleared ? 'btn-arcade-green text-black' : 'btn-arcade-pink text-white'} min-h-[44px] px-4 py-2 text-xs flex items-center gap-2 cursor-pointer font-kanit uppercase tracking-wider`}
                       >
-                        <span>{attempts.length > 0 ? 'ท้าทายอีกครั้ง' : 'เริ่มลุย'}</span>
+                        <span>{attempts.length > 0 ? 'RE-CHALLENGE' : 'START BATTLE'}</span>
                         <ArrowRight size={15} />
                       </button>
                     </div>

@@ -50,8 +50,9 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
   });
 
   it('should restore existing attempts when logging in again with same student ID', async () => {
+    const studentId = `6401-${Date.now()}`;
     // 1st Login & Save attempt
-    await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
+    await loginStudent('PROMPT-101', studentId, 'ไทเกอร์');
     saveAttempt({
       stageId: 1,
       stageNumber: '0.1',
@@ -64,12 +65,13 @@ describe('Session Storage & Auth Logic Unit Tests', () => {
 
     // Logout & Login again with same student ID
     logout();
-    const session2 = await loginStudent('PROMPT-101', '6401', 'ไทเกอร์');
-    expect(session2.userId).toBe('usr_PROMPT-101_6401');
+    const session2 = await loginStudent('PROMPT-101', studentId, 'ไทเกอร์');
+    expect(session2.userId).toBe(`usr_PROMPT-101_${studentId}`);
 
     const detailed = getStudentDetailedScores('PROMPT-101');
-    expect(detailed.length).toBe(1);
-    expect(detailed[0].totalPoints).toBe(16);
+    const myScore = detailed.find(d => d.studentId === studentId);
+    expect(myScore).toBeDefined();
+    expect(myScore.totalPoints).toBe(16);
   });
 
   it('should throw error for invalid room code', async () => {

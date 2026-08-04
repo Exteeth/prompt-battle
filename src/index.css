@@ -1,24 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  /* Vibrant & Bright Playful Kids EdTech Design System */
-  --color-bg-main: #f0f4fd;
-  --color-bg-surface: #ffffff;
-  --color-bg-surface-hover: #f8fafc;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  /* Retro Pixel Arcade & Game Boy Design System */
+  --color-bg-arcade: #0b0f19;
+  --color-bg-surface-arcade: #141a29;
+  --color-bg-card-arcade: #1a2336;
   
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-muted: #64748b;
+  --color-neon-cyan: #00f0ff;      /* AI Power / Tech Glow */
+  --color-neon-pink: #ff007a;      /* Primary Action / Boss Battle */
+  --color-neon-yellow: #ffe600;    /* High Scores / Stars / HP */
+  --color-neon-green: #00ff66;     /* Victory / Success State */
+  --color-neon-purple: #7000ff;    /* Magic Formula Badges */
   
-  /* Brand Colorful Palette for Kids */
-  --color-brand-cyan: #00d2ff;     /* Mascot Electric Sky */
-  --color-brand-pink: #ff5e97;     /* Bubblegum Pink Accent */
-  --color-brand-amber: #ffb703;    /* Sunshine Star Gold */
-  --color-brand-emerald: #10b981;  /* Island Victory Green */
-  --color-brand-purple: #8b5cf6;   /* Magic Purple */
-  --color-brand-blue: #2563eb;     /* Royal Mascot Blue */
+  --color-text-arcade-bright: #ffffff;
+  --color-text-arcade-muted: #94a3b8;
 }
 
 * {
@@ -27,12 +22,15 @@
 
 body {
   font-family: 'Prompt', 'Kanit', 'Outfit', system-ui, -apple-system, sans-serif;
-  background-color: #f0f4fd;
+  background-color: #0b0f19;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(255, 94, 151, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(255, 183, 3, 0.05) 0%, transparent 60%);
-  color: #0f172a;
+    radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(255, 0, 122, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(112, 0, 255, 0.08) 0%, transparent 65%),
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  color: #f8fafc;
   min-height: 100vh;
   overflow-x: hidden;
   letter-spacing: -0.01em;
@@ -64,9 +62,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Accessibility Focus Visible Ring */
 :focus-visible:not(input):not(textarea) {
-  outline: 3px solid #2563eb;
+  outline: 3px solid #00f0ff;
   outline-offset: 2px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 textarea:focus, textarea:focus-visible, input:focus, input:focus-visible {
@@ -79,10 +77,10 @@ textarea:focus, textarea:focus-visible, input:focus, input:focus-visible {
   position: absolute;
   top: -100px;
   left: 1rem;
-  background-color: #2563eb;
+  background-color: #ff007a;
   color: #ffffff;
   padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 700;
   font-size: 0.875rem;
   z-index: 9999;
@@ -92,91 +90,124 @@ textarea:focus, textarea:focus-visible, input:focus, input:focus-visible {
   top: 1rem;
 }
 
-/* Custom Scrollbars */
+/* Custom Pixel Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #e2e8f0;
-  border-radius: 9999px;
+  background: #0b0f19;
+  border: 1px solid #1e293b;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3b82f6;
-  border-radius: 9999px;
+  background: #ff007a;
+  border: 2px solid #0b0f19;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
+  background: #00f0ff;
 }
 
-/* 3D Toy Button & Pedestal Effects (Claymorphism for Kids) */
-.btn-3d-amber {
-  background: linear-gradient(180deg, #ffc700 0%, #eb9800 100%);
-  color: #4a2800;
-  box-shadow: 0 5px 0 0 #b37300, 0 10px 20px rgba(235, 152, 0, 0.3);
-  transition: all 0.15s ease;
-}
-.btn-3d-amber:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 0 #b37300, 0 14px 24px rgba(235, 152, 0, 0.4);
-}
-.btn-3d-amber:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 0 #b37300, 0 4px 8px rgba(235, 152, 0, 0.2);
+/* 🎮 Retro Pixel Arcade 3D Buttons & Cards */
+.arcade-card {
+  background: #141a29;
+  border: 3px solid #00f0ff;
+  box-shadow: 4px 4px 0px #000000, inset 0 0 12px rgba(0, 240, 255, 0.15);
+  border-radius: 1rem;
 }
 
-.btn-3d-blue {
-  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+.arcade-card-pink {
+  background: #191424;
+  border: 3px solid #ff007a;
+  box-shadow: 4px 4px 0px #000000, inset 0 0 12px rgba(255, 0, 122, 0.15);
+  border-radius: 1rem;
+}
+
+.arcade-card-amber {
+  background: #1e1b14;
+  border: 3px solid #ffe600;
+  box-shadow: 4px 4px 0px #000000, inset 0 0 12px rgba(255, 230, 0, 0.15);
+  border-radius: 1rem;
+}
+
+.arcade-card-hover {
+  transition: all 0.15s ease-out;
+}
+.arcade-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 0px #000000, 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+.btn-arcade-pink {
+  background: #ff007a;
   color: #ffffff;
-  box-shadow: 0 5px 0 0 #1e3a8a, 0 10px 20px rgba(37, 99, 235, 0.35);
-  transition: all 0.15s ease;
+  border: 3px solid #ffffff;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+  font-weight: 900;
 }
-.btn-3d-blue:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 0 #1e3a8a, 0 14px 24px rgba(37, 99, 235, 0.45);
+.btn-arcade-pink:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+  background: #ff2a93;
 }
-.btn-3d-blue:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 0 #1e3a8a, 0 4px 8px rgba(37, 99, 235, 0.2);
-}
-
-.btn-3d-pink {
-  background: linear-gradient(180deg, #ff5e97 0%, #e11d48 100%);
-  color: #ffffff;
-  box-shadow: 0 5px 0 0 #9f1239, 0 10px 20px rgba(225, 29, 72, 0.35);
-  transition: all 0.15s ease;
-}
-.btn-3d-pink:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 0 #9f1239, 0 14px 24px rgba(225, 29, 72, 0.45);
-}
-.btn-3d-pink:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 0 #9f1239, 0 4px 8px rgba(225, 29, 72, 0.2);
+.btn-arcade-pink:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
 }
 
-.btn-3d-emerald {
-  background: linear-gradient(180deg, #10b981 0%, #047857 100%);
-  color: #ffffff;
-  box-shadow: 0 5px 0 0 #064e3b, 0 10px 20px rgba(16, 185, 129, 0.35);
-  transition: all 0.15s ease;
+.btn-arcade-cyan {
+  background: #00f0ff;
+  color: #0b0f19;
+  border: 3px solid #ffffff;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+  font-weight: 900;
 }
-.btn-3d-emerald:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 0 #064e3b, 0 14px 24px rgba(16, 185, 129, 0.45);
+.btn-arcade-cyan:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+  background: #33f3ff;
 }
-.btn-3d-emerald:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 0 #064e3b, 0 4px 8px rgba(16, 185, 129, 0.2);
+.btn-arcade-cyan:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
 }
 
-/* Light Glassmorphism & Card Interactions */
-.glass-card-light {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.06);
+.btn-arcade-yellow {
+  background: #ffe600;
+  color: #0b0f19;
+  border: 3px solid #ffffff;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+  font-weight: 900;
+}
+.btn-arcade-yellow:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+  background: #ffeb33;
+}
+.btn-arcade-yellow:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.btn-arcade-green {
+  background: #00ff66;
+  color: #0b0f19;
+  border: 3px solid #ffffff;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+  font-weight: 900;
+}
+.btn-arcade-green:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+  background: #33ff85;
+}
+.btn-arcade-green:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
 }
 
 .glass-card-playful {

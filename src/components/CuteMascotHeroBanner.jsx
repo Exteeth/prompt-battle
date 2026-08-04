@@ -105,34 +105,44 @@ export default function CuteMascotHeroBanner({
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-5 sm:p-7 rounded-3xl shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt border-4 border-white/30">
-      {/* Background Interactive Starfield Particle Canvas */}
-      <canvas
-        ref={canvasRef}
-        width={700}
-        height={240}
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0"
-      />
-
-      {/* Background Ambient Glowing Halo Orbs */}
+    <div className="arcade-card-pink p-5 sm:p-7 rounded-3xl shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt border-4 border-cyan-400">
+      {/* CRT Scanline & Ambient Neon Glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent pointer-events-none z-0 animate-scanline" />
       <div className="absolute -top-12 -right-12 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none z-0 animate-pulse" />
-      <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-amber-400/25 rounded-full blur-3xl pointer-events-none z-0 animate-pulse" />
+      <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl pointer-events-none z-0 animate-pulse" />
+
+      {/* Arcade Header Scoreboard Bar */}
+      <div className="flex items-center justify-between text-xs font-mono font-black border-b-2 border-slate-700/80 pb-3.5 z-10">
+        <div className="flex items-center gap-2 text-cyan-400">
+          <span className="bg-cyan-950 px-2.5 py-1 rounded border border-cyan-400 font-mono">PLAYER 1</span>
+          <span className="text-white truncate max-w-[140px] sm:max-w-none">
+            {username || 'นักเรียน'} {studentId ? `[ID: ${studentId}]` : ''}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 text-yellow-300">
+          <Trophy size={16} className="text-yellow-400 animate-bounce" />
+          <span className="bg-yellow-950 px-2.5 py-1 rounded border border-yellow-400">
+            CLEARED: {clearedCount}/{totalStages} STAGES
+          </span>
+        </div>
+      </div>
 
       {/* Main Content Row: Mascot + Speech + Real-time Student Stats */}
       <div className="flex flex-col sm:flex-row items-center gap-5 z-10 w-full">
-        {/* Mascot Promptie Character with Floating XP Pop Gimmick */}
+        {/* Mascot Promptie Character with Floating Arcade Pop Gimmick */}
         <div
           onClick={() => handleNextSpeech(true)}
           className="relative cursor-pointer group shrink-0"
           title="แตะที่ Promptie เพื่อฟังคำชมและกำลังใจใหม่!"
         >
           {/* Animated Glowing Ambient Halo */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-amber-300 blur-xl opacity-60 animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-full bg-cyan-400/30 blur-xl opacity-80 animate-pulse pointer-events-none" />
 
           {/* Floating XP Pop Text Gimmick */}
           {popText && (
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-300 to-amber-400 text-amber-950 font-black text-xs px-3.5 py-1 rounded-2xl shadow-xl animate-slide-up whitespace-nowrap z-30 border-2 border-amber-200">
-              {popText}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-yellow-400 text-black font-black text-xs px-3.5 py-1 rounded border-2 border-white shadow-xl animate-slide-up whitespace-nowrap z-30 font-mono">
+              ⚡ {popText}
             </div>
           )}
 
@@ -142,38 +152,38 @@ export default function CuteMascotHeroBanner({
             className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl relative z-10 transition-transform duration-300 group-hover:scale-110 animate-mascot-pulse"
           />
 
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black shadow-lg flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 border border-amber-300 animate-wiggle">
-            <RefreshCw size={11} className="animate-spin text-amber-900" />
-            <span>รับกำลังใจ!</span>
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded bg-yellow-400 text-black text-[10px] font-black shadow-lg flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 border border-white font-mono">
+            <RefreshCw size={10} className="animate-spin text-black" />
+            <span>8-BIT BOOST!</span>
           </span>
         </div>
 
         {/* Speech Bubble & Dynamic Student Progress */}
         <div className="space-y-3 flex-1 w-full min-w-0">
-          <div className="p-4 sm:p-4.5 rounded-3xl bg-white text-slate-900 border-3 border-blue-200 shadow-xl relative group">
-            <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100">
-              <span className="text-xs font-extrabold text-rose-600 font-kanit flex items-center gap-1.5">
-                <Heart size={14} className="text-rose-500 fill-rose-500 animate-pulse" />
-                <span>คำชม & กำลังใจจากครู AI Promptie ({speechIndex + 1}/{speechList.length}):</span>
+          <div className="p-4 sm:p-4.5 rounded-2xl bg-slate-900 text-white border-2 border-cyan-400 shadow-xl relative group">
+            <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800 font-mono">
+              <span className="text-xs font-black text-pink-400 font-kanit flex items-center gap-1.5">
+                <Heart size={14} className="text-pink-500 fill-pink-500 animate-pulse" />
+                <span>ครู AI Promptie ({speechIndex + 1}/{speechList.length}):</span>
               </span>
 
-              <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                <Volume2 size={11} className="text-blue-500 animate-pulse" />
-                <span>อัตโนมัติ</span>
+              <span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
+                <Volume2 size={11} className="text-cyan-400 animate-pulse" />
+                <span>ARCADE VOICE</span>
               </span>
             </div>
 
-            <p key={fadeKey} className="text-xs sm:text-sm font-bold leading-relaxed break-words animate-fade-in font-prompt text-slate-800">
+            <p key={fadeKey} className="text-xs sm:text-sm font-bold leading-relaxed break-words animate-fade-in font-prompt text-slate-100">
               {speechList[speechIndex]}
             </p>
 
-            <div className="flex items-center gap-1 mt-3 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-1 mt-3 pt-2 border-t border-slate-800">
               {speechList.map((_, i) => (
                 <span
                   key={i}
                   onClick={() => { setSpeechIndex(i); setFadeKey(k => k + 1); playMascotBlipSound(); }}
                   className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                    i === speechIndex ? 'w-6 bg-rose-500' : 'w-2 bg-slate-200 hover:bg-rose-300'
+                    i === speechIndex ? 'w-6 bg-pink-500' : 'w-2 bg-slate-700 hover:bg-pink-400'
                   }`}
                 />
               ))}
@@ -181,39 +191,22 @@ export default function CuteMascotHeroBanner({
           </div>
 
           {/* Rotating Formula Tip Pill */}
-          <div className="bg-white/20 border-2 border-white/30 px-4 py-2 rounded-2xl text-xs font-bold text-white backdrop-blur-md flex items-start sm:items-center gap-3 transition-all shadow-sm">
-            <Lightbulb size={17} className="text-amber-300 shrink-0 animate-pulse mt-0.5 sm:mt-0" />
-            <span key={fadeKey} className="leading-relaxed break-words text-xs font-prompt animate-fade-in text-cyan-50">
+          <div className="bg-slate-900/90 border-2 border-yellow-400/70 px-4 py-2 rounded-xl text-xs font-bold text-yellow-300 backdrop-blur-md flex items-start sm:items-center gap-3 transition-all shadow-sm font-mono">
+            <Lightbulb size={17} className="text-yellow-300 shrink-0 animate-pulse mt-0.5 sm:mt-0" />
+            <span key={fadeKey} className="leading-relaxed break-words text-xs font-prompt animate-fade-in text-yellow-200">
               {cheatTips[tipIndex]}
             </span>
-          </div>
-
-          {/* Clean Real-time Student Status Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-outfit border border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-white text-xs truncate max-w-[150px] sm:max-w-none font-prompt flex items-center gap-1.5">
-                <span>👤</span>
-                <span>{username || 'นักเรียน'} {studentId ? `(${studentId})` : ''}</span>
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 font-mono font-black text-amber-300 text-xs">
-              <span className="flex items-center gap-1.5 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-xl">
-                <Trophy size={14} className="text-amber-300" />
-                <span>ผ่านแล้ว {clearedCount}/{totalStages} ด่าน</span>
-              </span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Start Button with 3D Toy Button Glow */}
+      {/* Start Button with 3D Arcade Button Glow */}
       <button
         onClick={() => { playPopSound(); if (onStartClick) onStartClick(); }}
-        className="btn-3d-amber min-h-[48px] px-6 py-3 font-black rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2.5 shrink-0 cursor-pointer w-full z-10 font-kanit tracking-wide border-2 border-amber-200"
+        className="btn-arcade-yellow min-h-[50px] px-6 py-3 rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shrink-0 cursor-pointer w-full z-10 font-kanit tracking-wider uppercase text-black"
       >
-        <Play size={20} className="fill-amber-950 text-amber-950" />
-        <span>เริ่มทำบทเรียนด่านถัดไป</span>
+        <Play size={20} className="fill-black text-black" />
+        <span>PRESS START / ลุยบทเรียนถัดไป</span>
       </button>
     </div>
   );
