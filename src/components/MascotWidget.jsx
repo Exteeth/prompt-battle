@@ -103,23 +103,30 @@ export default function MascotWidget({
 
       {/* Dynamic Speech Bubble */}
       <div className="flex-1 min-w-0">
-        <div className={`p-4 rounded-3xl border shadow-md relative transition-all duration-200 ${
+        <div className={`p-4.5 sm:p-5 rounded-3xl border-3 shadow-xl relative transition-all duration-200 ${
           state === 'victory'
-            ? 'bg-amber-50 border-amber-300 text-amber-950'
+            ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 text-amber-950 shadow-amber-200/50'
             : state === 'coaching'
-            ? 'bg-rose-50 border-rose-200 text-rose-950'
-            : 'bg-white border-blue-200 text-slate-800'
+            ? 'bg-gradient-to-r from-rose-50 to-pink-50 border-rose-300 text-rose-950 shadow-rose-200/50'
+            : state === 'thinking'
+            ? 'bg-gradient-to-r from-indigo-50 to-cyan-50 border-indigo-300 text-indigo-950 shadow-indigo-200/50'
+            : 'bg-white border-blue-200 text-slate-900 shadow-blue-100/60'
         }`}>
-          <p className={`text-xs sm:text-sm font-bold leading-relaxed transition-opacity duration-200 ${isChanging ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-black uppercase tracking-wider text-blue-600 font-kanit">
+            <Sparkles size={12} className="text-amber-500 animate-spin-slow" />
+            <span>ครู AI Promptie:</span>
+          </div>
+
+          <p className={`text-xs sm:text-sm font-extrabold leading-relaxed transition-opacity duration-200 ${isChanging ? 'opacity-0' : 'opacity-100'}`}>
             {activeMessage}
           </p>
 
-          <div className="flex items-center gap-1 mt-2 pt-2 border-t border-slate-100/80">
+          <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-200/60">
             {currentList.map((_, i) => (
               <span
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === msgIndex ? 'w-4 bg-blue-600' : 'w-1.5 bg-slate-200'
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === msgIndex ? 'w-5 bg-blue-600' : 'w-2 bg-slate-200'
                 }`}
               />
             ))}

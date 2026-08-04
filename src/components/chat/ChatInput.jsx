@@ -73,9 +73,9 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
     <div className="w-full bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:p-4 sticky bottom-0 z-10 shadow-lg font-prompt">
       <div className="max-w-4xl mx-auto space-y-2.5">
         {/* Quick Master Formula Tag Insert Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-          <span className="text-[11px] font-bold text-slate-500 shrink-0 flex items-center gap-1">
-            <PlusCircle size={13} className="text-blue-600" />
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none font-prompt">
+          <span className="text-[11px] font-black text-blue-700 shrink-0 flex items-center gap-1">
+            <PlusCircle size={14} className="text-blue-600 animate-pulse" />
             <span>แทรกสูตรลับ:</span>
           </span>
           {formulaTags.map((item, idx) => (
@@ -83,7 +83,7 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
               key={idx}
               type="button"
               onClick={() => insertFormulaTag(item.tag)}
-              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-800 border border-slate-200 hover:border-blue-300 text-[11px] font-semibold transition-all shrink-0 cursor-pointer active:scale-95"
+              className="px-3 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border-2 border-blue-200 hover:border-blue-400 text-xs font-black transition-all shrink-0 cursor-pointer active:scale-95 shadow-xs"
             >
               {item.label}
             </button>
@@ -92,19 +92,19 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
 
         {/* Starter Templates Drawer / Pills */}
         {stageStarters && stageStarters.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-prompt">
             <button
               type="button"
               onClick={() => { playPopSound(); setShowStarters(!showStarters); }}
-              className="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold flex items-center gap-1.5 hover:bg-blue-100 transition-colors shrink-0 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-950 font-black flex items-center gap-1.5 hover:bg-amber-200 transition-colors shrink-0 cursor-pointer shadow-xs"
             >
-              <Wand2 size={13} className="text-blue-600" />
+              <Wand2 size={14} className="text-amber-600 animate-spin-slow" />
               <span>ตัวช่วยคิด Prompt ({stageStarters.length})</span>
             </button>
 
             {stageHint && (
-              <span className="text-[11px] text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1 shrink-0 font-medium">
-                <Lightbulb size={12} className="text-amber-600" />
+              <span className="text-[11px] text-amber-900 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1 shrink-0 font-bold">
+                <Lightbulb size={13} className="text-amber-500 animate-pulse" />
                 <span>{stageHint}</span>
               </span>
             )}
@@ -113,15 +113,15 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
 
         {/* Expandable Starter Options */}
         {showStarters && stageStarters && (
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 animate-slide-up">
-            <span className="text-[11px] font-bold text-slate-600 block">เลือกตัวอย่างโครงสร้างคำสั่งเพื่อเริ่มเขียน:</span>
-            <div className="space-y-1.5">
+          <div className="p-3.5 bg-amber-50/90 border-2 border-amber-200 rounded-3xl space-y-2 animate-slide-up font-prompt">
+            <span className="text-xs font-black text-amber-950 block">แตะเลือกตัวอย่างคำสั่งเพื่อเริ่มเขียน:</span>
+            <div className="space-y-2">
               {stageStarters.map((starter, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => applyStarter(starter)}
-                  className="w-full text-left text-xs p-2.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-900 font-medium transition-all font-sans cursor-pointer block leading-relaxed"
+                  className="w-full text-left text-xs p-3 bg-white hover:bg-amber-100/60 border-2 border-amber-200 rounded-2xl text-slate-900 font-bold transition-all cursor-pointer block leading-relaxed shadow-xs"
                 >
                   💡 {starter}
                 </button>
@@ -130,8 +130,8 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="relative">
-          <div className="relative flex items-end bg-slate-50 rounded-2xl border-2 border-slate-300 focus-within:border-blue-600 focus-within:bg-white transition-all shadow-sm">
+        <form onSubmit={handleSubmit} className="relative font-prompt">
+          <div className="relative flex items-end bg-white rounded-3xl border-3 border-blue-200 focus-within:border-blue-500 focus-within:bg-white transition-all shadow-md">
             <textarea
               ref={textareaRef}
               value={prompt}
@@ -144,37 +144,37 @@ export default function ChatInput({ onSubmit, isLoading, attemptsLeft, stageStar
                   : 'พิมพ์ Prompt คำสั่งของคุณที่นี่... (กด Enter เพื่อส่ง | Shift+Enter เพื่อขึ้นบรรทัดใหม่)'
               }
               rows={1}
-              className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-xs sm:text-base p-3 sm:p-3.5 pr-24 resize-none border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 max-h-[180px] font-sans leading-relaxed min-h-[48px]"
+              className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-xs sm:text-base p-3.5 sm:p-4 pr-24 resize-none border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 max-h-[180px] font-sans leading-relaxed min-h-[48px]"
               style={{ outline: 'none', boxShadow: 'none' }}
             />
 
             {/* Clear Text & Send Action Buttons */}
-            <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
+            <div className="absolute right-2 bottom-2 flex items-center gap-2">
               {prompt.length > 0 && !isLoading && (
                 <button
                   type="button"
                   onClick={clearPrompt}
-                  className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+                  className="min-h-[40px] min-w-[40px] p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
                   title="ล้างข้อความ"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               )}
 
               <button
                 type="submit"
                 disabled={!prompt.trim() || isLoading || attemptsLeft <= 0}
-                className={`min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center transition-all ${
+                className={`min-h-[44px] min-w-[44px] px-3 py-2 rounded-2xl flex items-center justify-center font-black transition-all ${
                   prompt.trim() && !isLoading && attemptsLeft > 0
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 cursor-pointer active:scale-95'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    ? 'btn-3d-pink text-white cursor-pointer active:scale-95'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
                 }`}
                 title="ส่งคำสั่ง Prompt ให้ AI ประเมิน"
               >
                 {isLoading ? (
-                  <Loader2 size={18} className="animate-spin text-white" />
+                  <Loader2 size={20} className="animate-spin text-white" />
                 ) : (
-                  <ArrowUp size={20} className="font-bold" />
+                  <ArrowUp size={22} className="font-extrabold stroke-[3]" />
                 )}
               </button>
             </div>

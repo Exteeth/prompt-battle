@@ -248,46 +248,46 @@ export default function Home() {
 
         {/* Right Side: Entry Form Card */}
         <div className="w-full max-w-md lg:w-1/2">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-2xl space-y-6 relative">
+          <div className="glass-card-playful p-6 sm:p-8 space-y-6 relative border-4 border-blue-200">
             {/* Tab Switcher */}
-            <div className="grid grid-cols-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-2 p-1.5 bg-blue-50/80 rounded-2xl border-2 border-blue-100 shadow-inner">
               <button
                 type="button"
                 onClick={() => { playPopSound(); setTab('student'); setError(''); }}
-                className={`min-h-[44px] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`min-h-[44px] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   tab === 'student'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'btn-3d-blue text-white'
+                    : 'text-slate-600 hover:text-slate-900 font-bold'
                 }`}
               >
-                <GraduationCap size={16} />
+                <GraduationCap size={18} />
                 <span>นักเรียน</span>
               </button>
               <button
                 type="button"
                 onClick={() => { playPopSound(); setTab('teacher'); setError(''); }}
-                className={`min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`min-h-[44px] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   tab === 'teacher'
-                    ? 'bg-amber-500 text-white font-bold shadow-md'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'btn-3d-amber text-amber-950 font-black'
+                    : 'text-slate-600 hover:text-slate-900 font-bold'
                 }`}
               >
-                <ShieldCheck size={16} />
+                <ShieldCheck size={18} />
                 <span>ครูผู้สอน</span>
               </button>
             </div>
 
             {error && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold text-center animate-fade-in">
+              <div className="p-3.5 bg-rose-100 border-2 border-rose-300 text-rose-800 rounded-2xl text-xs font-bold text-center animate-fade-in shadow-sm">
                 {error}
               </div>
             )}
 
             {tab === 'student' ? (
-              <form onSubmit={handleStudentSubmit} className="space-y-4">
+              <form onSubmit={handleStudentSubmit} className="space-y-4 font-prompt">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                    <KeyRound size={14} className="text-blue-600" />
+                  <label className="text-xs font-black text-slate-800 block mb-1.5 flex items-center gap-1.5">
+                    <KeyRound size={15} className="text-blue-600" />
                     <span>รหัสห้องเรียน (Class Code)</span>
                   </label>
                   <input
@@ -296,13 +296,13 @@ export default function Home() {
                     value={roomCode}
                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     placeholder="เช่น PROMPT-101"
-                    className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[44px]"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-500 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[46px] shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                    <Hash size={14} className="text-blue-600" />
+                  <label className="text-xs font-black text-slate-800 block mb-1.5 flex items-center gap-1.5">
+                    <Hash size={15} className="text-blue-600" />
                     <span>รหัสนักเรียน / เลขประจำตัว</span>
                   </label>
                   <input
@@ -311,13 +311,13 @@ export default function Home() {
                     value={studentId}
                     onChange={(e) => setStudentId(e.target.value)}
                     placeholder="เช่น 6401 หรือ 12345 (เพื่อจำคะแนนเดิม)"
-                    className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[44px]"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-500 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[46px] shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                    <UserCheck size={14} className="text-blue-600" />
+                  <label className="text-xs font-black text-slate-800 block mb-1.5 flex items-center gap-1.5">
+                    <UserCheck size={15} className="text-blue-600" />
                     <span>ชื่อเล่นของคุณ</span>
                   </label>
                   <input
@@ -326,23 +326,23 @@ export default function Home() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="เช่น น้องไทเกอร์ ม.2/1"
-                    className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all min-h-[44px]"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-500 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all min-h-[46px] shadow-xs"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full min-h-[52px] py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 cursor-pointer mt-2 animate-shimmer hover:scale-[1.02] active:scale-98"
+                  className="btn-3d-pink w-full min-h-[52px] py-3.5 font-black rounded-2xl text-base flex items-center justify-center gap-2 cursor-pointer mt-3 font-kanit border-2 border-rose-200"
                 >
                   <span>เข้าสู่สนามฝึก Prompt Battle</span>
                   <ArrowRight size={20} />
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleTeacherSubmit} className="space-y-4">
+              <form onSubmit={handleTeacherSubmit} className="space-y-4 font-prompt">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                    <KeyRound size={14} className="text-amber-600" />
+                  <label className="text-xs font-black text-slate-800 block mb-1.5 flex items-center gap-1.5">
+                    <KeyRound size={15} className="text-amber-600" />
                     <span>รหัสห้องเรียน (Class Code)</span>
                   </label>
                   <input
@@ -351,13 +351,13 @@ export default function Home() {
                     value={roomCode}
                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     placeholder="เช่น PROMPT-101"
-                    className="w-full bg-slate-50 border border-slate-300 focus:border-amber-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[44px]"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-amber-500 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm font-mono tracking-wider focus:outline-none transition-all uppercase min-h-[46px] shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                    <Lock size={14} className="text-amber-600" />
+                  <label className="text-xs font-black text-slate-800 block mb-1.5 flex items-center gap-1.5">
+                    <Lock size={15} className="text-amber-600" />
                     <span>รหัส PIN ครู (Default: 1234)</span>
                   </label>
                   <input
@@ -366,13 +366,13 @@ export default function Home() {
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     placeholder="ใส่ PIN 4 หลัก"
-                    className="w-full bg-slate-50 border border-slate-300 focus:border-amber-600 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all min-h-[44px]"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-amber-500 focus:bg-white text-slate-900 rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all min-h-[46px] shadow-xs"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full min-h-[52px] py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-base transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer mt-2 animate-shimmer hover:scale-[1.02] active:scale-98"
+                  className="btn-3d-amber w-full min-h-[52px] py-3.5 font-black text-amber-950 rounded-2xl text-base flex items-center justify-center gap-2 cursor-pointer mt-3 font-kanit border-2 border-amber-200"
                 >
                   <ShieldCheck size={20} />
                   <span>เข้าสู่ระบบ Teacher Admin</span>
