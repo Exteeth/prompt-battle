@@ -105,20 +105,20 @@ export default function Leaderboard() {
 
         {/* 3D Podium Stand for Top 3 Champions */}
         {leaderboard.length > 0 && (
-          <div className="flex items-end justify-center gap-3 sm:gap-6 pt-4 pb-2">
+          <div className="flex items-end justify-center gap-3 sm:gap-6 pt-4 pb-2 font-prompt">
             {/* 2nd Place Podium */}
             {top2 ? (
               <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-slate-200 border-2 border-slate-400 flex items-center justify-center text-slate-700 font-bold text-sm shadow-md mb-2">
-                  <User size={20} />
+                <div className="w-13 h-13 rounded-full bg-slate-200 border-3 border-slate-400 flex items-center justify-center text-slate-700 font-bold text-sm shadow-md mb-2">
+                  <User size={22} />
                 </div>
-                <span className="text-xs font-bold text-slate-900 truncate max-w-[90px]">
+                <span className="text-xs font-black text-slate-900 truncate max-w-[90px]">
                   {top2.studentId ? `[${top2.studentId}] ` : ''}{top2.username}
                 </span>
-                <span className="text-[11px] text-amber-600 font-black font-mono">{top2.totalPoints} pts</span>
-                <div className="w-20 sm:w-24 h-24 bg-gradient-to-t from-slate-200 to-slate-100 rounded-t-2xl border-2 border-slate-300 flex flex-col items-center justify-center mt-2 shadow-md">
-                  <Medal size={28} className="text-slate-500" />
-                  <span className="text-xs font-black text-slate-600 font-mono mt-1">#2</span>
+                <span className="text-xs text-amber-600 font-black font-mono">{top2.totalPoints} pts</span>
+                <div className="w-22 sm:w-26 h-28 bg-gradient-to-t from-slate-300 via-slate-200 to-slate-100 rounded-t-3xl border-3 border-slate-400 flex flex-col items-center justify-center mt-2 shadow-xl pedestal-3d">
+                  <Medal size={32} className="text-slate-500" />
+                  <span className="text-sm font-black text-slate-700 font-mono mt-1">#2 SILVER</span>
                 </div>
               </div>
             ) : null}
@@ -126,17 +126,17 @@ export default function Leaderboard() {
             {/* 1st Place Podium */}
             {top1 ? (
               <div className="flex flex-col items-center -mt-6">
-                <Crown size={24} className="text-amber-500 fill-amber-500 drop-shadow-md mb-1" />
-                <div className="w-16 h-16 rounded-full bg-amber-100 border-4 border-amber-400 flex items-center justify-center text-amber-800 font-bold text-base shadow-lg mb-2">
-                  <User size={26} />
+                <Crown size={28} className="text-amber-400 fill-amber-300 drop-shadow-md mb-1 animate-wiggle" />
+                <div className="w-18 h-18 rounded-full bg-amber-100 border-4 border-amber-400 flex items-center justify-center text-amber-900 font-black text-base shadow-xl mb-2 animate-ring-pulse">
+                  <User size={30} />
                 </div>
-                <span className="text-sm font-black text-slate-900 truncate max-w-[110px]">
+                <span className="text-sm font-black text-slate-900 truncate max-w-[120px] font-kanit">
                   {top1.studentId ? `[${top1.studentId}] ` : ''}{top1.username}
                 </span>
-                <span className="text-xs text-amber-600 font-black font-mono">{top1.totalPoints} pts</span>
-                <div className="w-24 sm:w-28 h-32 bg-gradient-to-t from-amber-200 via-amber-100 to-amber-50 rounded-t-2xl border-2 border-amber-300 flex flex-col items-center justify-center mt-2 shadow-lg">
-                  <Trophy size={36} className="text-amber-600" />
-                  <span className="text-sm font-black text-amber-800 font-mono mt-1">#1 CHAMPION</span>
+                <span className="text-xs text-amber-600 font-black font-mono bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">{top1.totalPoints} pts</span>
+                <div className="w-26 sm:w-30 h-36 bg-gradient-to-t from-amber-300 via-amber-200 to-amber-100 rounded-t-3xl border-3 border-amber-400 flex flex-col items-center justify-center mt-2 shadow-2xl pedestal-3d">
+                  <Trophy size={40} className="text-amber-700 fill-amber-500 animate-bounce-gentle" />
+                  <span className="text-sm font-black text-amber-950 font-mono mt-1 tracking-wider">#1 CHAMPION</span>
                 </div>
               </div>
             ) : null}
@@ -144,16 +144,16 @@ export default function Leaderboard() {
             {/* 3rd Place Podium */}
             {top3 ? (
               <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-600 flex items-center justify-center text-amber-800 font-bold text-sm shadow-md mb-2">
-                  <User size={20} />
+                <div className="w-13 h-13 rounded-full bg-amber-100 border-3 border-amber-500 flex items-center justify-center text-amber-900 font-bold text-sm shadow-md mb-2">
+                  <User size={22} />
                 </div>
-                <span className="text-xs font-bold text-slate-900 truncate max-w-[90px]">
+                <span className="text-xs font-black text-slate-900 truncate max-w-[90px]">
                   {top3.studentId ? `[${top3.studentId}] ` : ''}{top3.username}
                 </span>
-                <span className="text-[11px] text-amber-600 font-black font-mono">{top3.totalPoints} pts</span>
-                <div className="w-20 sm:w-24 h-20 bg-gradient-to-t from-amber-100 to-amber-50 rounded-t-2xl border-2 border-amber-300 flex flex-col items-center justify-center mt-2 shadow-md">
-                  <Award size={28} className="text-amber-700" />
-                  <span className="text-xs font-black text-amber-800 font-mono mt-1">#3</span>
+                <span className="text-xs text-amber-600 font-black font-mono">{top3.totalPoints} pts</span>
+                <div className="w-22 sm:w-26 h-24 bg-gradient-to-t from-amber-200 to-amber-100 rounded-t-3xl border-3 border-amber-400 flex flex-col items-center justify-center mt-2 shadow-xl pedestal-3d">
+                  <Award size={32} className="text-amber-700" />
+                  <span className="text-xs font-black text-amber-900 font-mono mt-1">#3 BRONZE</span>
                 </div>
               </div>
             ) : null}
@@ -161,26 +161,26 @@ export default function Leaderboard() {
         )}
 
         {/* Search Student Input */}
-        <div className="relative max-w-md mx-auto">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="relative max-w-md mx-auto font-prompt">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ค้นหาด้วยรหัสนักเรียน หรือ ชื่อเล่น..."
-            className="w-full bg-white border border-slate-300 focus:border-blue-600 text-slate-900 rounded-2xl pl-10 pr-4 py-2.5 text-xs sm:text-sm focus:outline-none transition-all shadow-xs"
+            className="w-full bg-white border-2 border-slate-300 focus:border-blue-500 text-slate-900 rounded-2xl pl-11 pr-4 py-3 text-xs sm:text-sm focus:outline-none transition-all shadow-sm font-bold"
           />
         </div>
 
         {/* Leaderboard Table */}
-        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="glass-card-playful border-3 border-blue-200 overflow-hidden shadow-xl font-prompt">
           {filteredLeaderboard.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-sm">
+            <div className="p-12 text-center text-slate-500 text-sm font-bold">
               ไม่พบผู้เล่นที่คุณค้นหา
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
-              <div className="grid grid-cols-12 px-4 sm:px-6 py-3 bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+            <div className="divide-y-2 divide-slate-100">
+              <div className="grid grid-cols-12 px-4 sm:px-6 py-3.5 bg-blue-50/80 text-xs font-black text-blue-800 uppercase tracking-wider font-mono border-b-2 border-blue-100">
                 <div className="col-span-2 text-center">อันดับ</div>
                 <div className="col-span-5">ชื่อผู้เล่น / รหัส</div>
                 <div className="col-span-3 text-center">ด่านที่ผ่าน</div>
@@ -196,25 +196,25 @@ export default function Leaderboard() {
                 return (
                   <div
                     key={item.userId}
-                    className={`grid grid-cols-12 px-4 sm:px-6 py-3.5 items-center text-xs sm:text-sm transition-all ${
-                      isCurrentUser ? 'bg-blue-50 border-y border-blue-200 font-bold' : 'hover:bg-slate-50'
+                    className={`grid grid-cols-12 px-4 sm:px-6 py-4 items-center text-xs sm:text-sm transition-all ${
+                      isCurrentUser ? 'bg-blue-100/60 border-y-2 border-blue-300 font-extrabold' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <div className="col-span-2 flex justify-center font-bold font-mono">
+                    <div className="col-span-2 flex justify-center font-black font-mono text-slate-800">
                       #{rank}
                     </div>
 
-                    <div className="col-span-5 flex items-center gap-2.5 truncate">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarBg} ${avatarText}`}>
-                        <User size={13} />
+                    <div className="col-span-5 flex items-center gap-2.5 truncate font-prompt">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-xs ${avatarBg} ${avatarText}`}>
+                        <User size={15} />
                       </div>
-                      <span className={`truncate ${isCurrentUser ? 'text-blue-700 font-bold' : 'text-slate-900'}`}>
-                        {item.studentId && <span className="font-mono text-xs text-blue-600 mr-1.5 font-bold">[{item.studentId}]</span>}
+                      <span className={`truncate font-extrabold ${isCurrentUser ? 'text-blue-800' : 'text-slate-900'}`}>
+                        {item.studentId && <span className="font-mono text-xs text-blue-600 mr-1.5 font-black">[{item.studentId}]</span>}
                         {item.username} {isCurrentUser && '(คุณ)'}
                       </span>
                     </div>
 
-                    <div className="col-span-3 text-center text-slate-600 text-xs font-mono font-medium">
+                    <div className="col-span-3 text-center text-slate-700 text-xs font-mono font-bold">
                       {item.stagesCompleted} / 10 ด่าน
                     </div>
 

@@ -59,9 +59,9 @@ export default function TeacherDashboard() {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={handleExportCSV}
-            className="min-h-[44px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+            className="btn-3d-emerald min-h-[44px] px-4 py-2 font-black rounded-2xl text-xs flex items-center gap-2 cursor-pointer font-kanit border-2 border-emerald-200"
           >
-            <Download size={16} />
+            <Download size={18} />
             <span className="hidden sm:inline">Export รายงาน CSV รายคน</span>
           </button>
 
@@ -81,33 +81,33 @@ export default function TeacherDashboard() {
       {/* Main Content */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-8">
         {/* Metric Overview Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0 font-bold">
-              <Users size={24} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-prompt">
+          <div className="glass-card-playful p-5 rounded-3xl border-3 border-blue-200 shadow-md flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-blue-100 border-2 border-blue-300 flex items-center justify-center text-blue-700 shrink-0 font-bold shadow-xs">
+              <Users size={26} />
             </div>
             <div>
-              <span className="text-xs text-slate-500 block">จำนวนนักเรียนที่เข้าเล่น</span>
+              <span className="text-xs font-bold text-slate-500 block">จำนวนนักเรียนที่เข้าเล่น</span>
               <strong className="text-2xl font-black text-slate-900 font-mono">{studentDetailed.length} คน</strong>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0 font-bold">
-              <BarChart3 size={24} />
+          <div className="glass-card-playful p-5 rounded-3xl border-3 border-amber-200 shadow-md flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-amber-800 shrink-0 font-bold shadow-xs">
+              <BarChart3 size={26} />
             </div>
             <div>
-              <span className="text-xs text-slate-500 block">ด่านที่มีการทำมากที่สุด</span>
+              <span className="text-xs font-bold text-slate-500 block">ด่านที่มีการทำมากที่สุด</span>
               <strong className="text-2xl font-black text-slate-900 font-mono">Stage {analytics[0]?.stageNumber || '0.1'}</strong>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shrink-0 font-bold">
-              <Sparkles size={24} />
+          <div className="glass-card-playful p-5 rounded-3xl border-3 border-indigo-200 shadow-md flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-indigo-100 border-2 border-indigo-300 flex items-center justify-center text-indigo-700 shrink-0 font-bold shadow-xs">
+              <Sparkles size={26} className="text-indigo-600 animate-spin-slow" />
             </div>
             <div>
-              <span className="text-xs text-slate-500 block">คะแนนเฉลี่ยรวมทั้งห้อง</span>
+              <span className="text-xs font-bold text-slate-500 block">คะแนนเฉลี่ยรวมทั้งห้อง</span>
               <strong className="text-2xl font-black text-blue-600 font-mono">
                 {analytics.length > 0 
                   ? (analytics.reduce((acc, curr) => acc + parseFloat(curr.avgTotalScore), 0) / analytics.length).toFixed(1) 

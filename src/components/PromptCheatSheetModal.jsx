@@ -9,41 +9,44 @@ export default function PromptCheatSheetModal({ isOpen, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="cheat-sheet-title"
-      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in font-prompt"
+      className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-prompt"
     >
-      <div className="bg-white border-2 border-slate-200 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-white border-4 border-blue-200 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-blue-50/60">
+        <div className="p-4 sm:p-5 border-b-2 border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 font-kanit">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md">
-              <Sparkles size={20} aria-hidden="true" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md">
+              <Sparkles size={22} aria-hidden="true" className="animate-spin-slow text-amber-300" />
             </div>
             <div>
               <h2 id="cheat-sheet-title" className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                 สูตรลับการเขียน Prompt (Prompt Cheat Sheet)
               </h2>
-              <p className="text-xs text-slate-500">โครงสร้างและเกณฑ์ประเมินการเขียน Prompt 7 ด้าน (Rubric Framework)</p>
+              <p className="text-xs text-slate-600 font-prompt">โครงสร้างและเกณฑ์ประเมินการเขียน Prompt 7 ด้าน (Rubric Framework)</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             aria-label="ปิดหน้าต่างสูตรลับ Prompt"
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-2xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={22} aria-hidden="true" />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs sm:text-sm">
           {/* Formula Box */}
-          <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-md space-y-2 font-mono">
-            <span className="text-[11px] uppercase tracking-wider text-blue-100 font-semibold block">โครงสร้าง Prompt Master Formula (5 องค์ประกอบหลัก):</span>
-            <p className="font-bold text-xs sm:text-sm text-yellow-300 leading-relaxed">
+          <div className="p-5 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white rounded-3xl shadow-xl space-y-2.5 font-mono border-2 border-white/20">
+            <span className="text-xs uppercase tracking-wider text-amber-300 font-black flex items-center gap-1.5 font-kanit">
+              <Sparkles size={14} />
+              <span>โครงสร้าง Prompt Master Formula (5 องค์ประกอบหลัก):</span>
+            </span>
+            <p className="font-black text-xs sm:text-base text-yellow-300 leading-relaxed bg-black/20 p-3 rounded-2xl border border-white/10">
               [ROLE] + [CONTEXT] + [TASK] + [CONSTRAINTS] + [OUTPUT FORMAT]
             </p>
-            <p className="text-[11px] text-blue-100 font-sans border-t border-blue-400/50 pt-1.5 mt-1">
+            <p className="text-xs text-cyan-100 font-prompt border-t border-white/20 pt-2 mt-1">
               ✨ กำกับด้วย <strong>ความชัดเจน (Clarity)</strong> + ปรับพัฒนาด้วย <strong>การทำซ้ำ (Refinement & Iteration)</strong>
             </p>
           </div>

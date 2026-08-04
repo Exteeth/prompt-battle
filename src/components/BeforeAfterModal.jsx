@@ -14,49 +14,49 @@ export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="growth-modal-title"
-      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in font-prompt"
+      className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-prompt"
     >
-      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-white border-4 border-blue-200 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div className="p-4 sm:p-5 border-b-2 border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 font-kanit">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold">
-              <TrendingUp size={20} aria-hidden="true" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md">
+              <TrendingUp size={22} aria-hidden="true" />
             </div>
             <div>
-              <h2 id="growth-modal-title" className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h2 id="growth-modal-title" className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                 วิเคราะห์พัฒนาการ (Growth Comparison)
               </h2>
-              <p className="text-xs text-slate-500">เปรียบเทียบ Prompt และผลลัพธ์ระหว่าง Attempt ครั้งแรก vs ครั้งล่าสุด</p>
+              <p className="text-xs text-slate-600 font-prompt">เปรียบเทียบ Prompt และผลลัพธ์ระหว่าง Attempt ครั้งแรก vs ครั้งล่าสุด</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             aria-label="ปิดหน้าต่างวิเคราะห์พัฒนาการ"
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-2xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={22} aria-hidden="true" />
           </button>
         </div>
 
         {/* Growth Banner with animated badge */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <Sparkles size={18} aria-hidden="true" />
-            <span className="text-sm font-semibold">อัตราการเติบโตทางทักษะของคุณ:</span>
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-4 flex items-center justify-between px-6 shadow-sm font-prompt">
+          <div className="flex items-center gap-2.5">
+            <Sparkles size={20} aria-hidden="true" className="text-amber-300 animate-spin-slow" />
+            <span className="text-xs sm:text-sm font-black font-kanit">อัตราการเติบโตทางทักษะของคุณ:</span>
           </div>
           <div className="flex items-center gap-2 font-mono">
-            <span className="text-sm text-blue-100">{firstAttempt.totalScore} คะแนน</span>
+            <span className="text-xs sm:text-sm text-blue-100 font-bold">{firstAttempt.totalScore} คะแนน</span>
             <ArrowRight size={16} aria-hidden="true" />
-            <span className="text-lg font-black">{lastAttempt.totalScore} คะแนน</span>
+            <span className="text-base sm:text-xl font-black text-amber-300">{lastAttempt.totalScore} คะแนน</span>
             {/* Animated growth badge */}
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ml-2 flex items-center gap-0.5 animate-slide-up ${
-              isPositiveGrowth ? 'bg-white text-blue-700' : 'bg-rose-100 text-rose-700'
+            <span className={`text-xs px-3 py-1 rounded-full font-black ml-2 flex items-center gap-1 border border-white/20 shadow-md ${
+              isPositiveGrowth ? 'bg-amber-400 text-amber-950' : 'bg-rose-100 text-rose-800'
             }`}>
               {isPositiveGrowth 
-                ? <ArrowUp size={12} className="text-emerald-600 animate-float" />
-                : <ArrowDown size={12} className="text-rose-600" />
+                ? <ArrowUp size={14} className="text-amber-950 font-black animate-bounce" />
+                : <ArrowDown size={14} className="text-rose-700" />
               }
               {isPositiveGrowth ? `+${scoreGrowth}` : scoreGrowth} คะแนน
             </span>
