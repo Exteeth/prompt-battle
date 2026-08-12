@@ -113,10 +113,11 @@ export default function TeacherDashboard() {
     csvContent += `Category 3 (Evaluation & AI Feedback),${evalData.categoryAvg.cat3}\n`;
     csvContent += `Category 4 (Perceived Benefits),${evalData.categoryAvg.cat4}\n\n`;
 
-    csvContent += "Student Comments & Suggestions\n";
-    csvContent += "Student ID,Username,Average Score,Comment Text,Date Submitted\n";
-    (evalData.commentsList || []).forEach(c => {
-      csvContent += `"${c.studentId || ''}","${c.username}",${c.studentAvg},"${(c.comments || '').replace(/"/g, '""')}","${c.createdAt}"\n`;
+    csvContent += "Student Individual Evaluation List\n";
+    csvContent += "Student ID,Username,Average Rating (out of 5.00),Comment/Suggestion,Date Submitted\n";
+    (evalData.studentEvaluations || evalData.commentsList || []).forEach(c => {
+      const commentText = c.comments && c.comments.trim() ? c.comments.replace(/"/g, '""') : '(ไม่ได้ระบุข้อเสนอแนะเพิ่มเติม)';
+      csvContent += `"${c.studentId || ''}","${c.username}",${c.studentAvg},"${commentText}","${c.createdAt}"\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -462,33 +463,53 @@ export default function TeacherDashboard() {
             )}
           </SpotlightCard>
 
-          {/* Student Comments List */}
+          {/* All Student Evaluations List */}
           <SpotlightCard spotlightColor="rgba(0, 184, 148, 0.12)" className="bg-white/90 border border-white/80 shadow-lg p-6 space-y-5 my-6 font-prompt">
-            <div className="flex items-center gap-2.5 border-b border-black/5 pb-4">
-              <MessageSquare size={20} className="text-[#00B894]" />
-              <h3 className="font-extrabold text-base sm:text-lg text-[#1A1525] font-kanit">
-                ข้อเสนอแนะเพิ่มเติมจากนักเรียน ({(evalData.commentsList || []).length} ข้อความ)
-              </h3>
+            <div className="flex items-center justify-between border-b border-black/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <Users size={20} className="text-[#00B894]" />
+                <h3 className="font-extrabold text-base sm:text-lg text-[#1A1525] font-kanit">
+                  รายชื่อและรายละเอียดผลการประเมินเรียงตามนักเรียนที่ส่ง ({(evalData.studentEvaluations || evalData.commentsList || []).length} คน)
+                </h3>
+              </div>
+              <span className="text-xs text-[#8E85A2] font-mono font-bold">
+                ประเมินแล้ว {(evalData.studentEvaluations || evalData.commentsList || []).length}/{analytics.totalStudents} คน
+              </span>
             </div>
 
-            {(evalData.commentsList || []).length === 0 ? (
+            {(evalData.studentEvaluations || evalData.commentsList || []).length === 0 ? (
               <div className="p-10 text-center text-[#8E85A2] text-xs sm:text-sm">
-                ยังไม่มีข้อเสนอแนะเพิ่มเติมจากนักเรียนในขณะนี้
+                ยังไม่มีนักเรียนส่งแบบประเมินความพึงพอใจในขณะนี้
               </div>
             ) : (
-              <div className="space-y-3.5 max-h-72 overflow-y-auto pr-2">
-                {(evalData.commentsList || []).map((c, i) => (
-                  <div key={i} className="p-4 bg-black/[0.015] rounded-2xl border border-black/5 space-y-1.5 text-xs sm:text-sm">
-                    <div className="flex items-center justify-between text-[#5C526E]">
-                      <div className="flex items-center gap-2">
-                        <strong className="font-kanit text-[#1A1525]">{c.username}</strong>
+              <div className="space-y-3.5 max-h-96 overflow-y-auto pr-2">
+                {(evalData.studentEvaluations || evalData.commentsList || []).map((c, i) => (
+                  <div key={i} className="p-4 bg-black/[0.015] rounded-2xl border border-black/5 space-y-2 text-xs sm:text-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[#5C526E]">
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-mono font-bold text-xs text-[#8E85A2]">#{i + 1}</span>
+                        <strong className="font-kanit text-[#1A1525] text-sm sm:text-base">{c.username}</strong>
                         {c.studentId && <span className="font-mono text-xs text-[#8E85A2]">ID: {c.studentId}</span>}
                       </div>
-                      <span className="font-mono text-xs text-[#047857] font-extrabold bg-[#00B894]/10 px-2.5 py-0.5 rounded-full">คะแนนเฉลี่ย: {c.studentAvg}/5</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-[#047857] font-extrabold bg-[#00B894]/10 border border-[#00B894]/20 px-3 py-0.5 rounded-full">
+                          คะแนนเฉลี่ย: {c.studentAvg} / 5.00
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[#1A1525] font-medium leading-relaxed pt-1">
-                      "{c.comments}"
-                    </p>
+
+                    {/* Student Comment / Suggestion */}
+                    <div className="pt-1">
+                      {c.comments && c.comments.trim().length > 0 ? (
+                        <p className="text-[#1A1525] font-medium leading-relaxed bg-white p-3 rounded-xl border border-black/5 shadow-2xs">
+                          💬 "{c.comments}"
+                        </p>
+                      ) : (
+                        <p className="text-[#8E85A2] italic text-xs font-normal bg-black/[0.01] p-2.5 rounded-xl border border-dashed border-black/10">
+                          (ไม่ได้ระบุข้อเสนอแนะเพิ่มเติม)
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

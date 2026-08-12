@@ -667,25 +667,27 @@ export async function getRoomEvaluationAnalytics(roomCode) {
 
   const overallAvg = (allRatingsSum / (totalCount * 12)).toFixed(2);
 
-  const commentsList = evals
-    .filter(ev => ev.comments && ev.comments.trim().length > 0)
-    .map(ev => {
-      const rValues = Object.values(ev.ratings || {}).map(Number);
-      const studentAvg = rValues.length > 0 ? (rValues.reduce((a, b) => a + b, 0) / rValues.length).toFixed(2) : '-';
-      return {
-        username: ev.username,
-        studentId: ev.studentId || '',
-        comments: ev.comments,
-        studentAvg,
-        createdAt: ev.createdAt
-      };
-    });
+  const studentEvaluations = evals.map(ev => {
+    const rValues = Object.values(ev.ratings || {}).map(Number);
+    const studentAvg = rValues.length > 0 ? (rValues.reduce((a, b) => a + b, 0) / rValues.length).toFixed(2) : '-';
+    return {
+      username: ev.username,
+      studentId: ev.studentId || '',
+      ratings: ev.ratings || {},
+      comments: (ev.comments || '').trim(),
+      studentAvg,
+      createdAt: ev.createdAt
+    };
+  });
+
+  const commentsList = studentEvaluations.filter(ev => ev.comments && ev.comments.length > 0);
 
   return {
     totalEvaluations: totalCount,
     overallAvg,
     categoryAvg: { cat1: cat1Avg, cat2: cat2Avg, cat3: cat3Avg, cat4: cat4Avg },
     itemAvg,
+    studentEvaluations,
     commentsList,
     evaluationsList: evals
   };
