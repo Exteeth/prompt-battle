@@ -1,33 +1,17 @@
 import React from 'react';
 
 export default function StarBorder({
-  as: Component = 'button',
+  as: Component = 'div',
   className = '',
-  color = '#7C3AED',
-  speed = '4s',
   children,
   ...props
 }) {
   return (
     <Component
-      className={`relative inline-block py-[1px] px-[1px] overflow-hidden rounded-2xl ${className}`}
+      className={`relative inline-block w-full rounded-2xl transition-all duration-300 ${className}`}
       {...props}
     >
-      <div
-        className="absolute w-[300%] h-[300%] opacity-70 bottom-[-100%] right-[-100%] animate-star-movement-bottom z-0"
-        style={{
-          background: `radial-gradient(circle, ${color} 0%, transparent 20%)`,
-          animationDuration: speed,
-        }}
-      />
-      <div
-        className="absolute w-[300%] h-[300%] opacity-70 top-[-100%] left-[-100%] animate-star-movement-top z-0"
-        style={{
-          background: `radial-gradient(circle, ${color} 0%, transparent 20%)`,
-          animationDuration: speed,
-        }}
-      />
-      <div className="relative z-10 w-full h-full rounded-[15px]">
+      <div className="relative z-10 w-full h-full rounded-2xl">
         {children}
       </div>
     </Component>
