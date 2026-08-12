@@ -3,6 +3,7 @@ import { sql as neonSql, isNeonConfigured } from './neonClient';
 const SESSION_KEY = 'prompt_battle_session';
 const ATTEMPTS_KEY = 'prompt_battle_attempts';
 const ROOMS_KEY = 'prompt_battle_rooms';
+const EVALUATIONS_KEY = 'prompt_battle_evaluations';
 
 // Initialize default room data
 export function initDefaultData() {
@@ -15,12 +16,141 @@ export function initDefaultData() {
   }
 }
 
+export function getAllRooms() {
+  initDefaultData();
+  return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]');
+}
+
+export async function createRoom(code, name, teacherPin = '1234') {
+  initDefaultData();
+  if (!code || code.trim().length === 0) {
+    throw new Error('กรุณากรอกรหัสห้องเรียน');
+  }
+  if (!name || name.trim().length === 0) {
+    throw new Error('กรุณากรอกชื่อห้องเรียน');
+  }
+  if (!teacherPin || teacherPin.trim().length < 4) {
+    throw new Error('กรุณากำหนดรหัส PIN ของครูอย่างน้อย 4 หลัก');
+  }
+
+  const cleanCode = code.trim().toUpperCase();
+  const rooms = getAllRooms();
+
+  if (rooms.some(r => r.code.toUpperCase() === cleanCode)) {
+    throw new Error(`รหัสห้องเรียน "${cleanCode}" มีอยู่ในระบบแล้ว`);
+  }
+
+  const newRoom = {
+    code: cleanCode,
+    name: name.trim(),
+    teacher_pin: teacherPin.trim()
+  };
+
+  rooms.push(newRoom);
+  localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
+
+  // 🔥 Sync room to Neon backend
+  if (isNeonConfigured && neonSql) {
+    await ensureNeonTables();
+    try {
+      await neonSql`
+        INSERT INTO rooms (code, name, teacher_pin)
+        VALUES (${cleanCode}, ${name.trim()}, ${teacherPin.trim()})
+        ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, teacher_pin = EXCLUDED.teacher_pin
+      `;
+      console.log(`📤 Synced room ${cleanCode} to Neon DB`);
+    } catch (err) {
+      console.warn('⚠️ Neon room creation sync:', err.message);
+    }
+  }
+
+  return newRoom;
+}
+
+export async function deleteRoom(code) {
+  initDefaultData();
+  const cleanCode = (code || '').trim().toUpperCase();
+  if (!cleanCode) {
+    throw new Error('กรุณาระบุรหัสห้องเรียนที่จะลบ');
+  }
+
+  const rooms = getAllRooms();
+  const existingIndex = rooms.findIndex(r => r.code.toUpperCase() === cleanCode);
+
+  if (existingIndex === -1) {
+    throw new Error(`ไม่พบรหัสห้องเรียน "${cleanCode}" ในระบบ`);
+  }
+
+  if (rooms.length <= 1) {
+    throw new Error('ไม่สามารถลบห้องเรียนสุดท้ายได้ ต้องมีอย่างน้อย 1 ห้องเรียนในระบบ');
+  }
+
+  const roomToDelete = rooms[existingIndex];
+  rooms.splice(existingIndex, 1);
+  localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
+
+  // Clear attempts in localStorage for this room
+  const allAttempts = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
+  const filteredAttempts = allAttempts.filter(a => (a.roomCode || '').toUpperCase() !== cleanCode);
+  localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(filteredAttempts));
+
+  // 🔥 Delete room, profiles, and attempts from Neon DB
+  if (isNeonConfigured && neonSql) {
+    await ensureNeonTables();
+    try {
+      await neonSql`DELETE FROM attempts WHERE room_code = ${cleanCode}`;
+      await neonSql`DELETE FROM profiles WHERE room_code = ${cleanCode}`;
+      await neonSql`DELETE FROM rooms WHERE code = ${cleanCode}`;
+      console.log(`🗑️ Deleted room ${cleanCode} from Neon DB`);
+    } catch (err) {
+      console.warn('⚠️ Neon room deletion error:', err.message);
+    }
+  }
+
+  return roomToDelete;
+}
+
+export async function syncRoomsFromNeon() {
+  if (!isNeonConfigured || !neonSql) return getAllRooms();
+  try {
+    await ensureNeonTables();
+    const rows = await neonSql`SELECT code, name, teacher_pin FROM rooms ORDER BY created_at ASC`;
+    if (rows && rows.length > 0) {
+      const localRooms = getAllRooms();
+      const localMap = new Map(localRooms.map(r => [r.code.toUpperCase(), r]));
+      rows.forEach(r => {
+        localMap.set(r.code.toUpperCase(), { code: r.code, name: r.name, teacher_pin: r.teacher_pin });
+      });
+      const merged = Array.from(localMap.values());
+      localStorage.setItem(ROOMS_KEY, JSON.stringify(merged));
+      return merged;
+    }
+  } catch (err) {
+    console.warn('⚠️ Neon fetch rooms error:', err.message);
+  }
+  return getAllRooms();
+}
+
 // ----------------------------------------------------
 // Helper: Ensure Neon tables exist
 // ----------------------------------------------------
 async function ensureNeonTables() {
   if (!isNeonConfigured || !neonSql) return;
   try {
+    await neonSql`
+      CREATE TABLE IF NOT EXISTS rooms (
+        id SERIAL PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        teacher_pin TEXT NOT NULL DEFAULT '1234',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+    await neonSql`
+      INSERT INTO rooms (code, name, teacher_pin)
+      VALUES ('PROMPT-101', 'ห้องเรียนวิชา AI & Prompt Engineering (Demo)', '1234')
+      ON CONFLICT (code) DO NOTHING
+    `;
     await neonSql`
       CREATE TABLE IF NOT EXISTS profiles (
         id SERIAL PRIMARY KEY,
@@ -46,6 +176,18 @@ async function ensureNeonTables() {
         feedback JSONB NOT NULL DEFAULT '{}',
         total_score NUMERIC(5, 1) NOT NULL DEFAULT 0,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+    await neonSql`
+      CREATE TABLE IF NOT EXISTS evaluations (
+        id SERIAL PRIMARY KEY,
+        room_code TEXT NOT NULL,
+        student_id TEXT NOT NULL DEFAULT '',
+        username TEXT NOT NULL,
+        ratings JSONB NOT NULL DEFAULT '{}',
+        comments TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE (room_code, student_id, username)
       )
     `;
     console.log('✅ Neon backend tables ready');
@@ -90,30 +232,33 @@ async function fetchRoomAttemptsFromNeon(roomCode) {
 // ----------------------------------------------------
 // 1. AUTH & SESSION MANAGEMENT
 // ----------------------------------------------------
-export async function loginStudent(roomCode, studentId, username) {
+export async function loginStudent(roomCode = '', studentId = '', username = '') {
   initDefaultData();
-  const rooms = JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]');
-  const room = rooms.find(r => r.code.toUpperCase() === roomCode.trim().toUpperCase());
+  const safeRoomCode = (roomCode || '').trim().toUpperCase();
+  const safeStudentId = (studentId || '').trim().toUpperCase();
+  const safeUsername = (username || '').trim();
+
+  const rooms = await syncRoomsFromNeon();
+  const room = rooms.find(r => r.code.toUpperCase() === safeRoomCode);
 
   if (!room) {
-    throw new Error(`ไม่พบรหัสห้องเรียน "${roomCode}" กรุณาตรวจสอบรหัสห้องอีกครั้ง`);
+    throw new Error(`ไม่พบรหัสห้องเรียน "${safeRoomCode || roomCode}" กรุณาตรวจสอบรหัสห้องอีกครั้ง`);
   }
 
-  if (!studentId || studentId.trim().length === 0) {
+  if (!safeStudentId) {
     throw new Error('กรุณากรอกรหัสนักเรียน/เลขประจำตัว');
   }
 
-  if (!username || username.trim().length < 2) {
+  if (safeUsername.length < 2) {
     throw new Error('กรุณากรอกชื่อเล่นอย่างน้อย 2 ตัวอักษร');
   }
 
-  const cleanStudentId = studentId.trim().toUpperCase();
-  const userId = `usr_${room.code}_${cleanStudentId}`;
+  const userId = `usr_${room.code}_${safeStudentId}`;
 
   const session = {
     userId,
-    studentId: cleanStudentId,
-    username: username.trim(),
+    studentId: safeStudentId,
+    username: safeUsername,
     roomCode: room.code,
     roomName: room.name,
     role: 'student',
@@ -129,7 +274,7 @@ export async function loginStudent(roomCode, studentId, username) {
   if (isNeonConfigured && neonSql) {
     neonSql`
       INSERT INTO profiles (room_code, username, role)
-      VALUES (${room.code}, ${username.trim()}, 'student')
+      VALUES (${room.code}, ${safeUsername}, 'student')
       ON CONFLICT (room_code, username) DO NOTHING
     `.catch((err) => console.warn('Neon profile sync:', err.message));
   }
@@ -154,16 +299,19 @@ export async function loginStudent(roomCode, studentId, username) {
   return session;
 }
 
-export function loginTeacher(roomCode, pin) {
+export async function loginTeacher(roomCode = '', pin = '') {
   initDefaultData();
-  const rooms = JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]');
-  const room = rooms.find(r => r.code.toUpperCase() === roomCode.trim().toUpperCase());
+  const safeRoomCode = (roomCode || '').trim().toUpperCase();
+  const safePin = (pin || '').trim();
+
+  const rooms = await syncRoomsFromNeon();
+  const room = rooms.find(r => r.code.toUpperCase() === safeRoomCode);
 
   if (!room) {
-    throw new Error(`ไม่พบรหัสห้องเรียน "${roomCode}"`);
+    throw new Error(`ไม่พบรหัสห้องเรียน "${safeRoomCode || roomCode}"`);
   }
 
-  if (room.teacher_pin !== pin.trim()) {
+  if (!safePin || room.teacher_pin !== safePin) {
     throw new Error('รหัส PIN ของครูไม่ถูกต้อง');
   }
 
@@ -373,4 +521,172 @@ export function getStudentDetailedScores(roomCode) {
     const totalPoints = stageValues.reduce((sum, item) => sum + item.totalScore, 0);
     return { userId: student.userId, studentId: student.studentId, username: student.username, stagesCompleted: stageValues.length, totalPoints, stages: student.stages, attempts: student.attempts };
   }).sort((a, b) => b.totalPoints - a.totalPoints);
+}
+
+// ----------------------------------------------------
+// 5. EVALUATION SURVEY MANAGEMENT
+// ----------------------------------------------------
+export async function saveEvaluation({ ratings, comments = '' }) {
+  const user = getCurrentUser();
+  if (!user || user.role !== 'student') return null;
+
+  const allEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+  const index = allEvals.findIndex(e => e.userId === user.userId);
+
+  const evalRecord = {
+    id: 'eval_' + Math.random().toString(36).substr(2, 9),
+    roomCode: user.roomCode,
+    userId: user.userId,
+    studentId: user.studentId || '',
+    username: user.username,
+    ratings,
+    comments: (comments || '').trim(),
+    createdAt: new Date().toISOString()
+  };
+
+  if (index >= 0) {
+    allEvals[index] = evalRecord;
+  } else {
+    allEvals.push(evalRecord);
+  }
+
+  localStorage.setItem(EVALUATIONS_KEY, JSON.stringify(allEvals));
+
+  // Sync to Neon DB
+  if (isNeonConfigured && neonSql) {
+    await ensureNeonTables();
+    try {
+      await neonSql`
+        INSERT INTO evaluations (room_code, student_id, username, ratings, comments)
+        VALUES (${user.roomCode}, ${user.studentId || ''}, ${user.username}, ${JSON.stringify(ratings)}, ${comments.trim()})
+        ON CONFLICT (room_code, student_id, username)
+        DO UPDATE SET ratings = EXCLUDED.ratings, comments = EXCLUDED.comments, created_at = NOW()
+      `;
+      console.log(`📤 Synced evaluation to Neon for ${user.username}`);
+    } catch (err) {
+      console.warn('⚠️ Neon evaluation sync:', err.message);
+    }
+  }
+
+  return evalRecord;
+}
+
+export function getUserEvaluation() {
+  const user = getCurrentUser();
+  if (!user) return null;
+  const allEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+  return allEvals.find(e => e.userId === user.userId) || null;
+}
+
+export async function fetchRoomEvaluationsFromNeon(roomCode) {
+  if (!isNeonConfigured || !neonSql) return [];
+  try {
+    const rows = await neonSql`
+      SELECT * FROM evaluations
+      WHERE room_code = ${roomCode}
+      ORDER BY created_at DESC
+    `;
+    return rows.map(r => ({
+      id: 'neon_eval_' + r.id,
+      roomCode: r.room_code,
+      userId: `usr_${r.room_code}_${r.student_id || r.username}`,
+      studentId: r.student_id || '',
+      username: r.username,
+      ratings: typeof r.ratings === 'string' ? JSON.parse(r.ratings) : r.ratings,
+      comments: r.comments || '',
+      createdAt: r.created_at
+    }));
+  } catch (err) {
+    console.warn('⚠️ Neon fetch evaluations error:', err.message);
+    return [];
+  }
+}
+
+export async function getRoomEvaluationAnalytics(roomCode) {
+  let evals = [];
+  if (isNeonConfigured && neonSql) {
+    try {
+      const neonEvals = await fetchRoomEvaluationsFromNeon(roomCode);
+      if (neonEvals.length > 0) {
+        const localEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+        const localMap = new Map(localEvals.map(e => [e.userId, e]));
+        neonEvals.forEach(e => localMap.set(e.userId, e));
+        evals = Array.from(localMap.values()).filter(e => e.roomCode === roomCode);
+        localStorage.setItem(EVALUATIONS_KEY, JSON.stringify(Array.from(localMap.values())));
+      } else {
+        const localEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+        evals = localEvals.filter(e => e.roomCode === roomCode);
+      }
+    } catch (err) {
+      const localEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+      evals = localEvals.filter(e => e.roomCode === roomCode);
+    }
+  } else {
+    const localEvals = JSON.parse(localStorage.getItem(EVALUATIONS_KEY) || '[]');
+    evals = localEvals.filter(e => e.roomCode === roomCode);
+  }
+
+  const totalCount = evals.length;
+  const items = ['1.1', '1.2', '1.3', '2.1', '2.2', '2.3', '3.1', '3.2', '3.3', '4.1', '4.2', '4.3'];
+
+  if (totalCount === 0) {
+    const emptyItemAvg = {};
+    items.forEach(k => { emptyItemAvg[k] = '0.00'; });
+    return {
+      totalEvaluations: 0,
+      overallAvg: '0.00',
+      categoryAvg: { cat1: '0.00', cat2: '0.00', cat3: '0.00', cat4: '0.00' },
+      itemAvg: emptyItemAvg,
+      commentsList: []
+    };
+  }
+
+  const itemSums = {};
+  items.forEach(k => { itemSums[k] = 0; });
+  let allRatingsSum = 0;
+
+  evals.forEach(ev => {
+    if (ev.ratings) {
+      items.forEach(k => {
+        const val = Number(ev.ratings[k]) || 0;
+        itemSums[k] += val;
+        allRatingsSum += val;
+      });
+    }
+  });
+
+  const itemAvg = {};
+  items.forEach(k => {
+    itemAvg[k] = (itemSums[k] / totalCount).toFixed(2);
+  });
+
+  const cat1Avg = ((parseFloat(itemAvg['1.1']) + parseFloat(itemAvg['1.2']) + parseFloat(itemAvg['1.3'])) / 3).toFixed(2);
+  const cat2Avg = ((parseFloat(itemAvg['2.1']) + parseFloat(itemAvg['2.2']) + parseFloat(itemAvg['2.3'])) / 3).toFixed(2);
+  const cat3Avg = ((parseFloat(itemAvg['3.1']) + parseFloat(itemAvg['3.2']) + parseFloat(itemAvg['3.3'])) / 3).toFixed(2);
+  const cat4Avg = ((parseFloat(itemAvg['4.1']) + parseFloat(itemAvg['4.2']) + parseFloat(itemAvg['4.3'])) / 3).toFixed(2);
+
+  const overallAvg = (allRatingsSum / (totalCount * 12)).toFixed(2);
+
+  const commentsList = evals
+    .filter(ev => ev.comments && ev.comments.trim().length > 0)
+    .map(ev => {
+      const rValues = Object.values(ev.ratings || {}).map(Number);
+      const studentAvg = rValues.length > 0 ? (rValues.reduce((a, b) => a + b, 0) / rValues.length).toFixed(2) : '-';
+      return {
+        username: ev.username,
+        studentId: ev.studentId || '',
+        comments: ev.comments,
+        studentAvg,
+        createdAt: ev.createdAt
+      };
+    });
+
+  return {
+    totalEvaluations: totalCount,
+    overallAvg,
+    categoryAvg: { cat1: cat1Avg, cat2: cat2Avg, cat3: cat3Avg, cat4: cat4Avg },
+    itemAvg,
+    commentsList,
+    evaluationsList: evals
+  };
 }

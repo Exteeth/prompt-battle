@@ -544,28 +544,28 @@ textarea:focus, textarea:focus-visible, input:focus, input:focus-visible {
 
 /* ─── Glass Button Variants (light) ─── */
 .btn-glass-violet {
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(124, 58, 237, 0.12);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  color: #5B21B6;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: #6D28D9;
   border-radius: 0.875rem;
-  font-weight: 700;
-  padding: 0.4rem 0.875rem;
+  font-weight: 800;
+  padding: 0.5rem 1rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.08);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.12);
 }
 .btn-glass-violet:hover {
-  background: rgba(124, 58, 237, 0.18);
-  border-color: rgba(124, 58, 237, 0.4);
-  color: #3B0764;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.18);
-  transform: translateY(-1px);
+  background: rgba(124, 58, 237, 0.22);
+  border-color: rgba(124, 58, 237, 0.45);
+  color: #5B21B6;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.22);
+  transform: translateY(-1.5px);
 }
 .btn-glass-violet:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.1);
 }
 
 .btn-glass-mint {

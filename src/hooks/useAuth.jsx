@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
     return session;
   };
 
-  const loginTeacher = (roomCode, pin) => {
-    const session = apiLoginTeacher(roomCode, pin);
+  const loginTeacher = async (roomCode, pin) => {
+    const session = await apiLoginTeacher(roomCode, pin);
     setUser(session);
     return session;
   };

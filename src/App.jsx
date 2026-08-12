@@ -7,6 +7,7 @@ import StageList from './pages/StageList';
 import PlayStage from './pages/PlayStage';
 import Leaderboard from './pages/Leaderboard';
 import TeacherDashboard from './pages/TeacherDashboard';
+import Evaluation from './pages/Evaluation';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -34,6 +35,11 @@ export default function App() {
           <Route path="/leaderboard" element={
             <ProtectedRoute>
               <Leaderboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/evaluation" element={
+            <ProtectedRoute>
+              <Evaluation />
             </ProtectedRoute>
           } />
           <Route path="/teacher" element={

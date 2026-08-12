@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { STAGES_DATA } from '../data/stagesData';
-import { getUserStageAttempts, getUserAchievements, getLeaderboard } from '../lib/sessionStorage';
+import { getUserStageAttempts, getUserAchievements, getLeaderboard, getUserEvaluation } from '../lib/sessionStorage';
 import { playPopSound, playStarTwinkleSound, toggleMute, getMuteState } from '../lib/soundEffects';
 
 import CuteMascotHeroBanner from '../components/CuteMascotHeroBanner';
@@ -421,6 +421,46 @@ export default function StageList() {
             </SpotlightCard>
           </div>
         )}
+
+        {/* Student Satisfaction Survey Banner Card (Bottom of Stages) */}
+        <section className="mt-10 pt-8 border-t border-black/10 pb-6">
+          <SpotlightCard className="p-6 sm:p-8 bg-gradient-to-r from-white via-white to-[#7C3AED]/[0.06] border border-[#7C3AED]/25 shadow-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 font-prompt">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                <div className="w-14 h-14 rounded-2xl bg-[#7C3AED]/10 border border-[#7C3AED]/20 text-[#6D28D9] flex items-center justify-center shrink-0 shadow-sm">
+                  <FileText size={28} />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h3 className="font-extrabold text-base sm:text-lg text-[#1A1525] font-kanit">
+                      แบบประเมินความพึงพอใจการใช้งาน Prompt Battle
+                    </h3>
+                    {Boolean(getUserEvaluation()) && (
+                      <span className="px-3 py-0.5 rounded-full bg-[#00B894]/15 text-[#047857] text-xs font-bold font-mono">
+                        ประเมินแล้ว ✅
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs sm:text-sm text-[#5C526E] leading-relaxed">
+                    ขอความร่วมมือช่วยทำแบบประเมินความพึงพอใจและให้ข้อเสนอแนะ เพื่อนำไปพัฒนาและปรับปรุงเกมให้ดียิ่งขึ้น
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  playPopSound();
+                  navigate('/evaluation');
+                }}
+                className="btn-glass-violet min-h-[50px] px-6 py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-2 cursor-pointer font-kanit shadow-md shrink-0 whitespace-nowrap active:scale-98 transition-all"
+              >
+                <Star size={18} className="fill-current" />
+                <span>{Boolean(getUserEvaluation()) ? 'แก้ไข / ดูแบบประเมิน' : 'ทำแบบประเมินความพึงพอใจ'}</span>
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </SpotlightCard>
+        </section>
 
       </main>
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { playPopSound, playMascotBlipSound } from '../lib/soundEffects';
-import { Sparkles, ShieldCheck, GraduationCap, KeyRound, UserCheck, Lock, RefreshCw, Zap, ChevronRight, ShieldAlert } from 'lucide-react';
+import { createRoom, getAllRooms } from '../lib/sessionStorage';
+import { Sparkles, ShieldCheck, GraduationCap, KeyRound, UserCheck, Lock, RefreshCw, Zap, ChevronRight, ShieldAlert, Plus, School, X, Check } from 'lucide-react';
 
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import ShinyText from '../components/reactbits/ShinyText';
@@ -18,6 +20,14 @@ export default function Home() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Quick Room Creation Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newRoomCode, setNewRoomCode] = useState('');
+  const [newRoomName, setNewRoomName] = useState('');
+  const [newTeacherPin, setNewTeacherPin] = useState('1234');
+  const [createModalError, setCreateModalError] = useState('');
+  const [createModalSuccess, setCreateModalSuccess] = useState('');
 
   // Mascot messages
   const mascotMessages = [
@@ -49,18 +59,41 @@ export default function Home() {
     }
   };
 
-  const handleTeacherSubmit = (e) => {
+  const handleTeacherSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     try {
       playPopSound();
-      loginTeacher(roomCode, pin);
+      await loginTeacher(roomCode, pin);
       navigate('/teacher');
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCreateRoomSubmit = async (e) => {
+    e.preventDefault();
+    setCreateModalError('');
+    setCreateModalSuccess('');
+    try {
+      const created = await createRoom(newRoomCode, newRoomName, newTeacherPin);
+      if (created) {
+        setRoomCode(created.code || '');
+        setPin(created.teacher_pin || '');
+        setCreateModalSuccess(`สร้างห้องเรียน "${created.code}" (${created.name}) สำเร็จแล้ว!`);
+        setNewRoomCode('');
+        setNewRoomName('');
+        setNewTeacherPin('1234');
+        setTimeout(() => {
+          setIsCreateModalOpen(false);
+          setCreateModalSuccess('');
+        }, 1500);
+      }
+    } catch (err) {
+      setCreateModalError(err.message);
     }
   };
 
@@ -328,11 +361,132 @@ export default function Home() {
                   <ShieldCheck size={18} />
                   <span>{isLoading ? 'กำลังยืนยัน PIN...' : 'เข้าสู่ระบบครูผู้สอน'}</span>
                 </button>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreateModalError('');
+                      setCreateModalSuccess('');
+                      setIsCreateModalOpen(true);
+                    }}
+                    className="text-xs font-bold text-[#6D28D9] hover:underline inline-flex items-center gap-1 cursor-pointer font-kanit"
+                  >
+                    <Plus size={14} />
+                    <span>ต้องการสร้างห้องเรียนเพิ่ม? (Click)</span>
+                  </button>
+                </div>
               </form>
             )}
           </SpotlightCard>
         </div>
       </main>
+
+      {/* Quick Create Room Modal */}
+      <AnimatePresence>
+        {isCreateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-white/60 space-y-5 font-prompt relative"
+            >
+              <div className="flex items-center justify-between border-b border-black/5 pb-3">
+                <div className="flex items-center gap-2 text-[#7C3AED]">
+                  <School size={22} />
+                  <h3 className="font-extrabold text-lg text-[#1A1525] font-kanit">สร้างห้องเรียนใหม่ (Create Room)</h3>
+                </div>
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-[#8E85A2] transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {createModalError && (
+                <div className="p-3 bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 text-[#B91C1C] rounded-2xl text-xs font-bold font-prompt">
+                  {createModalError}
+                </div>
+              )}
+
+              {createModalSuccess && (
+                <div className="p-3 bg-[#00B894]/10 border border-[#00B894]/20 text-[#047857] rounded-2xl text-xs font-bold font-prompt flex items-center gap-2">
+                  <Check size={16} />
+                  <span>{createModalSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleCreateRoomSubmit} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-[#6D28D9] block mb-1 flex items-center gap-1 font-kanit">
+                    <KeyRound size={14} />
+                    รหัสห้องเรียน (Class Code) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newRoomCode}
+                    onChange={(e) => setNewRoomCode(e.target.value.toUpperCase())}
+                    placeholder="เช่น PROMPT-102 หรือ AI-202"
+                    className="glass-input font-mono tracking-wider uppercase min-h-[46px]"
+                  />
+                  <span className="text-[10px] text-[#8E85A2] block mt-1">ใช้อักษรภาษาอังกฤษและตัวเลข (เช่น PROMPT-102)</span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-[#6D28D9] block mb-1 flex items-center gap-1 font-kanit">
+                    <School size={14} />
+                    ชื่อห้องเรียน (Classroom Name) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newRoomName}
+                    onChange={(e) => setNewRoomName(e.target.value)}
+                    placeholder="เช่น วิชา AI & Prompt Engineering ม.2/2"
+                    className="glass-input min-h-[46px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-[#6D28D9] block mb-1 flex items-center gap-1 font-kanit">
+                    <KeyRound size={14} />
+                    รหัส PIN ของครู (Teacher PIN) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newTeacherPin}
+                    onChange={(e) => setNewTeacherPin(e.target.value)}
+                    placeholder="เช่น 1234 (อย่างน้อย 4 หลัก)"
+                    className="glass-input font-mono min-h-[46px]"
+                  />
+                  <span className="text-[10px] text-[#8E85A2] block mt-1">ใช้สำหรับเข้าสู่ระบบในฐานะครูผู้สอนประจำห้องนี้</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/5">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="px-4 py-2.5 rounded-2xl text-xs font-bold border border-black/10 hover:bg-black/5 text-[#5C526E] transition-colors cursor-pointer"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-glass-violet px-5 py-2.5 text-xs font-black flex items-center gap-1.5 cursor-pointer font-kanit shadow-sm"
+                  >
+                    <Plus size={16} />
+                    <span>ยืนยันสร้างห้องเรียน</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="p-3 text-center text-xs text-[#8E85A2] border-t border-black/5 font-prompt bg-white/50 backdrop-blur-xs">
