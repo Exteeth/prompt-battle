@@ -734,6 +734,46 @@ textarea:focus, textarea:focus-visible, input:focus, input:focus-visible {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* ─── ReactBits Animation Keyframes ─── */
+@keyframes shiny-text {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.animate-shiny-text {
+  animation: shiny-text 3s linear infinite;
+}
+
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+  }
+  100% {
+    transform: translate(-100%, -100%);
+  }
+}
+
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+  }
+  100% {
+    transform: translate(100%, 100%);
+  }
+}
+
+.animate-star-movement-bottom {
+  animation: star-movement-bottom 6s linear infinite;
+}
+
+.animate-star-movement-top {
+  animation: star-movement-top 6s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;

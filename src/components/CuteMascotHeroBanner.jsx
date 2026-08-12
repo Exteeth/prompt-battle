@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, RefreshCw, Trophy, Star, Lightbulb, Heart, Volume2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, RefreshCw, Trophy, Heart, Volume2, Lightbulb } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { playPopSound, playMascotBlipSound } from '../lib/soundEffects';
+
+import SpotlightCard from './reactbits/SpotlightCard';
+import Magnet from './reactbits/Magnet';
+import ShinyText from './reactbits/ShinyText';
+import StarBorder from './reactbits/StarBorder';
+import BlurText from './reactbits/BlurText';
 
 export default function CuteMascotHeroBanner({ 
   username, 
@@ -44,56 +51,12 @@ export default function CuteMascotHeroBanner({
   const [speechIndex, setSpeechIndex] = useState(0);
   const [tipIndex, setTipIndex] = useState(0);
   const [popText, setPopText] = useState(null);
-  const [fadeKey, setFadeKey] = useState(0);
-  const canvasRef = useRef(null);
 
-  // Background subtle particle canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let frame;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const particles = Array.from({ length: 15 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.5 + 0.5,
-      speed: Math.random() * 0.3 + 0.1,
-      alpha: Math.random() * 0.4 + 0.2,
-    }));
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particles) {
-        p.y -= p.speed;
-        if (p.y < 0) { p.y = canvas.height; p.x = Math.random() * canvas.width; }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
-        ctx.fill();
-      }
-      frame = requestAnimationFrame(render);
-    };
-    render();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  // Auto-rotate every 4.5s
+  // Auto-rotate every 5.5s
   useEffect(() => {
     const timer = setInterval(() => {
       handleNextSpeech(false);
-    }, 4500);
+    }, 5500);
     return () => clearInterval(timer);
   }, []);
 
@@ -101,7 +64,6 @@ export default function CuteMascotHeroBanner({
     if (isManual) playMascotBlipSound();
     setSpeechIndex((prev) => (prev + 1) % speechList.length);
     setTipIndex((prev) => (prev + 1) % cheatTips.length);
-    setFadeKey((prev) => prev + 1);
 
     const randomPop = popEffects[Math.floor(Math.random() * popEffects.length)];
     setPopText(randomPop);
@@ -109,18 +71,19 @@ export default function CuteMascotHeroBanner({
   };
 
   return (
-    <div className="glass-panel-elevated p-5 sm:p-7 rounded-3xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt">
-      {/* Background particle canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0 rounded-3xl" style={{ width: '100%', height: '100%' }} />
-
-      {/* Subtle inner glow */}
+    <SpotlightCard
+      spotlightColor="rgba(124, 58, 237, 0.15)"
+      borderColor="rgba(124, 58, 237, 0.25)"
+      className="p-5 sm:p-7 rounded-3xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt bg-white/70 shadow-xl"
+    >
+      {/* Background ambient halos */}
       <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#7C3AED]/[0.08] rounded-full blur-3xl pointer-events-none z-0" />
       <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-[#00B894]/[0.06] rounded-full blur-3xl pointer-events-none z-0" />
 
       {/* Header Scoreboard Bar */}
       <div className="flex items-center justify-between text-xs font-mono font-bold border-b border-black/5 pb-3 z-10">
         <div className="flex items-center gap-2">
-          <span className="bg-black/[0.03] px-3 py-1 rounded-full font-mono text-[#6D28D9]">STUDENT</span>
+          <span className="bg-[#7C3AED]/[0.08] px-3 py-1 rounded-full font-mono text-[#6D28D9]">STUDENT</span>
           <span className="text-[#1A1525] font-bold truncate max-w-[140px] sm:max-w-none">
             {username || 'นักเรียน'} {studentId ? `[ID: ${studentId}]` : ''}
           </span>
@@ -128,46 +91,58 @@ export default function CuteMascotHeroBanner({
 
         <div className="flex items-center gap-2 text-[#F59E0B]">
           <Trophy size={16} className="animate-bounce" />
-          <span className="bg-[#F59E0B]/[0.08] px-3 py-1 rounded-full text-[#92400E] border border-[#F59E0B]/[0.15]">
-            CLEARED: {clearedCount}/{totalStages} STAGES
-          </span>
+          <ShinyText
+            text={`CLEARED: ${clearedCount}/${totalStages} STAGES`}
+            speed={4}
+            className="bg-[#F59E0B]/[0.08] px-3 py-1 rounded-full text-[#92400E] border border-[#F59E0B]/[0.2]"
+          />
         </div>
       </div>
 
-      {/* Main Content: Mascot + Speech + Stats */}
+      {/* Main Content: Mascot + Speech */}
       <div className="flex flex-col sm:flex-row items-center gap-5 z-10 w-full">
-        {/* Mascot */}
-        <div
-          onClick={() => handleNextSpeech(true)}
-          className="relative cursor-pointer group shrink-0"
-          title="แตะที่ Promptie เพื่อฟังคำชมและกำลังใจใหม่!"
-        >
-          {/* Animated halo */}
-          <div className="absolute inset-0 rounded-full bg-[#7C3AED]/[0.12] blur-xl opacity-70 animate-pulse pointer-events-none" />
+        {/* Mascot with ReactBits Magnet */}
+        <Magnet magnetStrength={0.25} padding={120}>
+          <div
+            onClick={() => handleNextSpeech(true)}
+            className="relative cursor-pointer group shrink-0"
+            title="แตะที่ Promptie เพื่อฟังคำชมและกำลังใจใหม่!"
+          >
+            {/* Animated halo */}
+            <div className="absolute inset-0 rounded-full bg-[#7C3AED]/[0.15] blur-xl opacity-70 animate-pulse pointer-events-none" />
 
-          {/* Floating pop effect */}
-          {popText && (
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#FBBF24] text-[#1A1525] font-black text-xs px-3.5 py-1 rounded-full border border-white/30 shadow-xl animate-slide-up whitespace-nowrap z-30 font-mono">
-              ⚡ {popText}
-            </div>
-          )}
+            {/* Floating pop text */}
+            <AnimatePresence>
+              {popText && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: -40, scale: 1 }}
+                  exit={{ opacity: 0, y: -60, scale: 0.8 }}
+                  className="absolute left-1/2 -translate-x-1/2 bg-[#FBBF24] text-[#1A1525] font-black text-xs px-3.5 py-1 rounded-full border border-white/40 shadow-xl whitespace-nowrap z-30 font-mono"
+                >
+                  ⚡ {popText}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <img
-            src="/assets/mascot.webp"
-            alt="Promptie Mascot"
-            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-xl relative z-10 transition-transform duration-300 group-hover:scale-110 animate-mascot-pulse"
-          />
+            <motion.img
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              src="/assets/mascot.webp"
+              alt="Promptie Mascot"
+              className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-xl relative z-10 animate-mascot-pulse"
+            />
 
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#7C3AED] text-white text-[10px] font-black shadow-lg flex items-center gap-1 opacity-95 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 font-mono">
-            <RefreshCw size={10} className="animate-spin" />
-            CLICK ME!
-          </span>
-        </div>
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#7C3AED] text-white text-[10px] font-black shadow-lg flex items-center gap-1 opacity-95 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 font-mono">
+              <RefreshCw size={10} className="animate-spin" />
+              CLICK ME!
+            </span>
+          </div>
+        </Magnet>
 
-        {/* Speech + Tip area */}
+        {/* Speech + Tip Area */}
         <div className="space-y-3 flex-1 w-full min-w-0">
-          {/* Speech bubble glass card */}
-          <div className="p-4 sm:p-4.5 rounded-2xl bg-black/[0.02] border border-black/5 relative backdrop-blur-sm">
+          <div className="p-4 rounded-2xl bg-white/70 border border-black/5 relative backdrop-blur-md">
             <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-black/5 font-mono">
               <span className="text-xs font-bold text-[#B91C1C] font-kanit flex items-center gap-1.5">
                 <Heart size={14} className="text-[#FF6B6B] fill-[#FF6B6B] animate-pulse" />
@@ -176,46 +151,55 @@ export default function CuteMascotHeroBanner({
 
               <span className="text-[10px] text-[#6D28D9] font-mono flex items-center gap-1">
                 <Volume2 size={11} className="animate-pulse" />
-                MASCOT VOICE
+                REACTBITS SPEECH
               </span>
             </div>
 
-            <p key={fadeKey} className="text-xs sm:text-sm font-bold leading-relaxed break-words animate-fade-in font-prompt text-[#1A1525]">
-              {speechList[speechIndex]}
-            </p>
+            <div className="min-h-[44px] flex items-center">
+              <BlurText
+                key={speechIndex}
+                text={speechList[speechIndex]}
+                className="text-xs sm:text-sm font-bold leading-relaxed font-prompt text-[#1A1525]"
+                delay={0.015}
+              />
+            </div>
 
             {/* Dots navigation */}
             <div className="flex items-center gap-1 mt-3 pt-2 border-t border-black/5">
               {speechList.map((_, i) => (
                 <span
                   key={i}
-                  onClick={() => { setSpeechIndex(i); setFadeKey(k => k + 1); playMascotBlipSound(); }}
+                  onClick={() => { setSpeechIndex(i); playMascotBlipSound(); }}
                   className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                    i === speechIndex ? 'w-6 bg-[#FF6B6B]' : 'w-2 bg-black/8 hover:bg-[#FF6B6B]/30'
+                    i === speechIndex ? 'w-6 bg-[#FF6B6B]' : 'w-2 bg-black/10 hover:bg-[#FF6B6B]/40'
                   }`}
                 />
               ))}
             </div>
           </div>
 
-          {/* Rotating formula tip */}
-          <div className="bg-[#F59E0B]/[0.08] border border-[#F59E0B]/[0.15] px-4 py-2 rounded-xl text-xs font-bold text-[#92400E] flex items-start sm:items-center gap-3 transition-all backdrop-blur-sm">
+          {/* Rotating tip */}
+          <div className="bg-[#F59E0B]/[0.08] border border-[#F59E0B]/[0.2] px-4 py-2 rounded-xl text-xs font-bold text-[#92400E] flex items-start sm:items-center gap-3 transition-all backdrop-blur-sm">
             <Lightbulb size={17} className="text-[#F59E0B] shrink-0 animate-pulse mt-0.5 sm:mt-0" />
-            <span key={fadeKey} className="leading-relaxed break-words text-xs font-prompt animate-fade-in">
+            <span key={tipIndex} className="leading-relaxed break-words text-xs font-prompt animate-fade-in">
               {cheatTips[tipIndex]}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Start Button */}
-      <button
-        onClick={() => { playPopSound(); if (onStartClick) onStartClick(); }}
-        className="btn-glass-mint min-h-[50px] px-6 py-3 rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2.5 shrink-0 cursor-pointer w-full z-10 font-kanit tracking-wider uppercase"
-      >
-        <Play size={20} />
-        <span>ลุยบทเรียนถัดไป / START BATTLE</span>
-      </button>
-    </div>
+      {/* Start Button with ReactBits StarBorder */}
+      <StarBorder color="#00B894" speed="3s" className="w-full">
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => { playPopSound(); if (onStartClick) onStartClick(); }}
+          className="btn-glass-mint min-h-[52px] px-6 py-3 text-sm sm:text-base flex items-center justify-center gap-2.5 cursor-pointer w-full font-kanit tracking-wider uppercase shadow-lg"
+        >
+          <Play size={20} />
+          <span>ลุยบทเรียนถัดไป / START BATTLE</span>
+        </motion.button>
+      </StarBorder>
+    </SpotlightCard>
   );
 }
