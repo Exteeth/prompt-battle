@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const KKU_BASE_URL = process.env.VITE_KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
-  const KKU_API_KEY = process.env.VITE_KKU_API_KEY;
+  const KKU_BASE_URL = process.env.VITE_KKU_BASE_URL || process.env.KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
+  const KKU_API_KEY = process.env.VITE_KKU_API_KEY || process.env.KKU_API_KEY;
   const KKU_MODEL = 'deepseek-v4-flash';
 
   if (!KKU_API_KEY) {
-    return res.status(500).json({ error: 'KKU_API_KEY not configured on server' });
+    return res.status(500).json({ error: 'KKU_API_KEY not configured on server (.env.local or environment variable missing)' });
   }
 
   try {

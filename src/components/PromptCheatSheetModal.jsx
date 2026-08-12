@@ -9,27 +9,27 @@ export default function PromptCheatSheetModal({ isOpen, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="cheat-sheet-title"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-prompt"
+      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in font-prompt"
     >
-      <div className="arcade-card border-4 border-cyan-400 bg-slate-900 text-white w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up">
+      <div className="bg-white border-2 border-blue-200/90 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-xl animate-slide-up">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b-2 border-slate-800 flex items-center justify-between bg-slate-950 font-kanit">
+        <div className="p-4 sm:p-5 border-b-2 border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 font-kanit">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-400 text-cyan-300 flex items-center justify-center font-bold shadow-md">
-              <Sparkles size={22} aria-hidden="true" className="animate-spin-slow text-yellow-300" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md">
+              <Sparkles size={22} aria-hidden="true" className="animate-spin-slow text-amber-300" />
             </div>
             <div>
-              <h2 id="cheat-sheet-title" className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                PROMPT CHEAT SHEET (สูตรลับ 7 ด้าน)
+              <h2 id="cheat-sheet-title" className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                สูตรลับการเขียน Prompt (Prompt Cheat Sheet)
               </h2>
-              <p className="text-xs text-cyan-400 font-mono">RUBRIC FRAMEWORK & MASTER FORMULA</p>
+              <p className="text-xs text-slate-600 font-prompt">โครงสร้างและเกณฑ์ประเมินการเขียน Prompt 7 ด้าน (Rubric Framework)</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             aria-label="ปิดหน้าต่างสูตรลับ Prompt"
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded-2xl transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X size={22} aria-hidden="true" />
           </button>

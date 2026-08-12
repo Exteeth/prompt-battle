@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, RefreshCw, Trophy, Star, Lightbulb, Heart, MessageSquare, Volume2, Sparkles, Award, Flame } from 'lucide-react';
+import { Play, RefreshCw, Trophy, Star, Lightbulb, Heart, Volume2 } from 'lucide-react';
 import { playPopSound, playMascotBlipSound } from '../lib/soundEffects';
 
 export default function CuteMascotHeroBanner({ 
@@ -9,7 +9,6 @@ export default function CuteMascotHeroBanner({
   totalStages = 5, 
   onStartClick 
 }) {
-  // Pure Encouragement, Compliments, and Praise Messages from ครู AI Promptie
   const speechList = [
     `สวัสดีครับน้อง${username || 'นักเรียน'}! ครู AI Promptie เชื่อมั่นในตัวน้องเสมอ ยินดีต้อนรับเข้าสู่เกาะผจญภัยนะครับ! 🤖✨`,
     `สุดยอดไปเลย! ความพยายามฝึกฝนของน้อง${username || 'นักเรียน'} จะทำให้น้องกลายเป็น Master ที่เก่งที่สุดแน่นอนครับ! 🚀🔥`,
@@ -48,43 +47,49 @@ export default function CuteMascotHeroBanner({
   const [fadeKey, setFadeKey] = useState(0);
   const canvasRef = useRef(null);
 
-  // Background Drifting Particle Starfield Canvas Effect
+  // Background subtle particle canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let animationFrameId;
+    let frame;
 
-    let particles = Array.from({ length: 22 }, () => ({
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const particles = Array.from({ length: 15 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      radius: Math.random() * 2.2 + 1,
-      alpha: Math.random() * 0.7 + 0.3,
-      speed: Math.random() * 0.4 + 0.1
+      r: Math.random() * 1.5 + 0.5,
+      speed: Math.random() * 0.3 + 0.1,
+      alpha: Math.random() * 0.4 + 0.2,
     }));
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#ffffff';
-
-      particles.forEach((p) => {
+      for (const p of particles) {
         p.y -= p.speed;
-        if (p.y < 0) p.y = canvas.height;
-        ctx.globalAlpha = p.alpha;
+        if (p.y < 0) { p.y = canvas.height; p.x = Math.random() * canvas.width; }
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
         ctx.fill();
-      });
-
-      animationFrameId = requestAnimationFrame(render);
+      }
+      frame = requestAnimationFrame(render);
     };
-
     render();
 
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', resize);
+    };
   }, []);
 
-  // Continuous auto-rotation every 4.5 seconds for continuous cheer & chatter
+  // Auto-rotate every 4.5s
   useEffect(() => {
     const timer = setInterval(() => {
       handleNextSpeech(false);
@@ -98,50 +103,51 @@ export default function CuteMascotHeroBanner({
     setTipIndex((prev) => (prev + 1) % cheatTips.length);
     setFadeKey((prev) => prev + 1);
 
-    // Floating Encouragement Pop Effect
     const randomPop = popEffects[Math.floor(Math.random() * popEffects.length)];
     setPopText(randomPop);
     setTimeout(() => setPopText(null), 1800);
   };
 
   return (
-    <div className="arcade-card-pink p-5 sm:p-7 rounded-3xl shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt border-4 border-cyan-400">
-      {/* CRT Scanline & Ambient Neon Glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent pointer-events-none z-0 animate-scanline" />
-      <div className="absolute -top-12 -right-12 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none z-0 animate-pulse" />
-      <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl pointer-events-none z-0 animate-pulse" />
+    <div className="glass-panel-elevated p-5 sm:p-7 rounded-3xl flex flex-col justify-between gap-5 relative overflow-hidden font-prompt">
+      {/* Background particle canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0 rounded-3xl" style={{ width: '100%', height: '100%' }} />
 
-      {/* Arcade Header Scoreboard Bar */}
-      <div className="flex items-center justify-between text-xs font-mono font-black border-b-2 border-slate-700/80 pb-3.5 z-10">
-        <div className="flex items-center gap-2 text-cyan-400">
-          <span className="bg-cyan-950 px-2.5 py-1 rounded border border-cyan-400 font-mono">PLAYER 1</span>
-          <span className="text-white truncate max-w-[140px] sm:max-w-none">
+      {/* Subtle inner glow */}
+      <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#7C3AED]/[0.08] rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-[#00B894]/[0.06] rounded-full blur-3xl pointer-events-none z-0" />
+
+      {/* Header Scoreboard Bar */}
+      <div className="flex items-center justify-between text-xs font-mono font-bold border-b border-black/5 pb-3 z-10">
+        <div className="flex items-center gap-2">
+          <span className="bg-black/[0.03] px-3 py-1 rounded-full font-mono text-[#6D28D9]">STUDENT</span>
+          <span className="text-[#1A1525] font-bold truncate max-w-[140px] sm:max-w-none">
             {username || 'นักเรียน'} {studentId ? `[ID: ${studentId}]` : ''}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-yellow-300">
-          <Trophy size={16} className="text-yellow-400 animate-bounce" />
-          <span className="bg-yellow-950 px-2.5 py-1 rounded border border-yellow-400">
+        <div className="flex items-center gap-2 text-[#F59E0B]">
+          <Trophy size={16} className="animate-bounce" />
+          <span className="bg-[#F59E0B]/[0.08] px-3 py-1 rounded-full text-[#92400E] border border-[#F59E0B]/[0.15]">
             CLEARED: {clearedCount}/{totalStages} STAGES
           </span>
         </div>
       </div>
 
-      {/* Main Content Row: Mascot + Speech + Real-time Student Stats */}
+      {/* Main Content: Mascot + Speech + Stats */}
       <div className="flex flex-col sm:flex-row items-center gap-5 z-10 w-full">
-        {/* Mascot Promptie Character with Floating Arcade Pop Gimmick */}
+        {/* Mascot */}
         <div
           onClick={() => handleNextSpeech(true)}
           className="relative cursor-pointer group shrink-0"
           title="แตะที่ Promptie เพื่อฟังคำชมและกำลังใจใหม่!"
         >
-          {/* Animated Glowing Ambient Halo */}
-          <div className="absolute inset-0 rounded-full bg-cyan-400/30 blur-xl opacity-80 animate-pulse pointer-events-none" />
+          {/* Animated halo */}
+          <div className="absolute inset-0 rounded-full bg-[#7C3AED]/[0.12] blur-xl opacity-70 animate-pulse pointer-events-none" />
 
-          {/* Floating XP Pop Text Gimmick */}
+          {/* Floating pop effect */}
           {popText && (
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-yellow-400 text-black font-black text-xs px-3.5 py-1 rounded border-2 border-white shadow-xl animate-slide-up whitespace-nowrap z-30 font-mono">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#FBBF24] text-[#1A1525] font-black text-xs px-3.5 py-1 rounded-full border border-white/30 shadow-xl animate-slide-up whitespace-nowrap z-30 font-mono">
               ⚡ {popText}
             </div>
           )}
@@ -149,64 +155,66 @@ export default function CuteMascotHeroBanner({
           <img
             src="/assets/mascot.webp"
             alt="Promptie Mascot"
-            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl relative z-10 transition-transform duration-300 group-hover:scale-110 animate-mascot-pulse"
+            className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-xl relative z-10 transition-transform duration-300 group-hover:scale-110 animate-mascot-pulse"
           />
 
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded bg-yellow-400 text-black text-[10px] font-black shadow-lg flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 border border-white font-mono">
-            <RefreshCw size={10} className="animate-spin text-black" />
-            <span>8-BIT BOOST!</span>
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#7C3AED] text-white text-[10px] font-black shadow-lg flex items-center gap-1 opacity-95 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 font-mono">
+            <RefreshCw size={10} className="animate-spin" />
+            CLICK ME!
           </span>
         </div>
 
-        {/* Speech Bubble & Dynamic Student Progress */}
+        {/* Speech + Tip area */}
         <div className="space-y-3 flex-1 w-full min-w-0">
-          <div className="p-4 sm:p-4.5 rounded-2xl bg-slate-900 text-white border-2 border-cyan-400 shadow-xl relative group">
-            <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800 font-mono">
-              <span className="text-xs font-black text-pink-400 font-kanit flex items-center gap-1.5">
-                <Heart size={14} className="text-pink-500 fill-pink-500 animate-pulse" />
-                <span>ครู AI Promptie ({speechIndex + 1}/{speechList.length}):</span>
+          {/* Speech bubble glass card */}
+          <div className="p-4 sm:p-4.5 rounded-2xl bg-black/[0.02] border border-black/5 relative backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-black/5 font-mono">
+              <span className="text-xs font-bold text-[#B91C1C] font-kanit flex items-center gap-1.5">
+                <Heart size={14} className="text-[#FF6B6B] fill-[#FF6B6B] animate-pulse" />
+                ครู AI Promptie ({speechIndex + 1}/{speechList.length}):
               </span>
 
-              <span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
-                <Volume2 size={11} className="text-cyan-400 animate-pulse" />
-                <span>ARCADE VOICE</span>
+              <span className="text-[10px] text-[#6D28D9] font-mono flex items-center gap-1">
+                <Volume2 size={11} className="animate-pulse" />
+                MASCOT VOICE
               </span>
             </div>
 
-            <p key={fadeKey} className="text-xs sm:text-sm font-bold leading-relaxed break-words animate-fade-in font-prompt text-slate-100">
+            <p key={fadeKey} className="text-xs sm:text-sm font-bold leading-relaxed break-words animate-fade-in font-prompt text-[#1A1525]">
               {speechList[speechIndex]}
             </p>
 
-            <div className="flex items-center gap-1 mt-3 pt-2 border-t border-slate-800">
+            {/* Dots navigation */}
+            <div className="flex items-center gap-1 mt-3 pt-2 border-t border-black/5">
               {speechList.map((_, i) => (
                 <span
                   key={i}
                   onClick={() => { setSpeechIndex(i); setFadeKey(k => k + 1); playMascotBlipSound(); }}
                   className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                    i === speechIndex ? 'w-6 bg-pink-500' : 'w-2 bg-slate-700 hover:bg-pink-400'
+                    i === speechIndex ? 'w-6 bg-[#FF6B6B]' : 'w-2 bg-black/8 hover:bg-[#FF6B6B]/30'
                   }`}
                 />
               ))}
             </div>
           </div>
 
-          {/* Rotating Formula Tip Pill */}
-          <div className="bg-slate-900/90 border-2 border-yellow-400/70 px-4 py-2 rounded-xl text-xs font-bold text-yellow-300 backdrop-blur-md flex items-start sm:items-center gap-3 transition-all shadow-sm font-mono">
-            <Lightbulb size={17} className="text-yellow-300 shrink-0 animate-pulse mt-0.5 sm:mt-0" />
-            <span key={fadeKey} className="leading-relaxed break-words text-xs font-prompt animate-fade-in text-yellow-200">
+          {/* Rotating formula tip */}
+          <div className="bg-[#F59E0B]/[0.08] border border-[#F59E0B]/[0.15] px-4 py-2 rounded-xl text-xs font-bold text-[#92400E] flex items-start sm:items-center gap-3 transition-all backdrop-blur-sm">
+            <Lightbulb size={17} className="text-[#F59E0B] shrink-0 animate-pulse mt-0.5 sm:mt-0" />
+            <span key={fadeKey} className="leading-relaxed break-words text-xs font-prompt animate-fade-in">
               {cheatTips[tipIndex]}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Start Button with 3D Arcade Button Glow */}
+      {/* Start Button */}
       <button
         onClick={() => { playPopSound(); if (onStartClick) onStartClick(); }}
-        className="btn-arcade-yellow min-h-[50px] px-6 py-3 rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shrink-0 cursor-pointer w-full z-10 font-kanit tracking-wider uppercase text-black"
+        className="btn-glass-mint min-h-[50px] px-6 py-3 rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2.5 shrink-0 cursor-pointer w-full z-10 font-kanit tracking-wider uppercase"
       >
-        <Play size={20} className="fill-black text-black" />
-        <span>PRESS START / ลุยบทเรียนถัดไป</span>
+        <Play size={20} />
+        <span>ลุยบทเรียนถัดไป / START BATTLE</span>
       </button>
     </div>
   );
