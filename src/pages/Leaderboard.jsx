@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
-import { getLeaderboard, getUserAchievements } from '../lib/sessionStorage';
+import { getLeaderboard, getUserAchievements, syncRoomAttemptsFromNeon } from '../lib/sessionStorage';
 import { playPopSound } from '../lib/soundEffects';
 import { Trophy, ArrowLeft, Crown, Medal, Award, User, Sparkles, Search, Share2, Check } from 'lucide-react';
 
@@ -15,6 +15,17 @@ export default function Leaderboard() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedShare, setCopiedShare] = useState(false);
+  const [syncedVersion, setSyncedVersion] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (user && user.roomCode) {
+      syncRoomAttemptsFromNeon(user.roomCode).then(() => {
+        if (isMounted) setSyncedVersion(v => v + 1);
+      });
+    }
+    return () => { isMounted = false; };
+  }, [user?.roomCode]);
 
   if (!user) {
     navigate('/');

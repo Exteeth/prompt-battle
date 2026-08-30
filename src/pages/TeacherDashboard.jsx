@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
-import { getTeacherAnalytics, getStudentDetailedScores, getAllRooms, createRoom, deleteRoom, getRoomEvaluationAnalytics } from '../lib/sessionStorage';
+import { getTeacherAnalytics, getStudentDetailedScores, getAllRooms, createRoom, deleteRoom, getRoomEvaluationAnalytics, syncRoomAttemptsFromNeon } from '../lib/sessionStorage';
 import { STAGES_DATA } from '../data/stagesData';
 import { Download, LogOut, Users, BarChart3, Sparkles, ChevronDown, ChevronUp, User, Award, CheckCircle, ShieldCheck, Plus, X, School, KeyRound, Check, Trash2, Star, MessageSquare, PieChart, TrendingUp } from 'lucide-react';
 
@@ -26,7 +26,6 @@ export default function TeacherDashboard() {
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
-  // Evaluation Survey State
   const [evalData, setEvalData] = useState({
     totalEvaluations: 0,
     overallAvg: '0.00',
@@ -35,12 +34,16 @@ export default function TeacherDashboard() {
     commentsList: []
   });
   const [showItemDetails, setShowItemDetails] = useState(false);
+  const [syncedVersion, setSyncedVersion] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
     if (user && user.roomCode) {
       getRoomEvaluationAnalytics(user.roomCode).then(data => {
         if (isMounted && data) setEvalData(data);
+      });
+      syncRoomAttemptsFromNeon(user.roomCode).then(() => {
+        if (isMounted) setSyncedVersion(v => v + 1);
       });
     }
     return () => { isMounted = false; };

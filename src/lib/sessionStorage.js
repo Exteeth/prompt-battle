@@ -197,17 +197,18 @@ async function ensureNeonTables() {
 }
 
 // ----------------------------------------------------
-// Helper: Fetch ALL attempts for a room from Neon
+// Helper: Fetch ALL attempts for a room from Neon & Sync LocalStorage
 // ----------------------------------------------------
-async function fetchRoomAttemptsFromNeon(roomCode) {
-  if (!isNeonConfigured || !neonSql) return [];
+export async function syncRoomAttemptsFromNeon(roomCode) {
+  if (!isNeonConfigured || !neonSql || !roomCode) return [];
   try {
+    await ensureNeonTables();
     const rows = await neonSql`
       SELECT * FROM attempts
       WHERE room_code = ${roomCode}
       ORDER BY created_at DESC
     `;
-    return rows.map(r => ({
+    const neonAttempts = rows.map(r => ({
       id: 'neon_' + r.id,
       roomCode: r.room_code,
       userId: `usr_${r.room_code}_${r.student_id || r.username}`,
@@ -223,6 +224,14 @@ async function fetchRoomAttemptsFromNeon(roomCode) {
       totalScore: parseFloat(r.total_score) || 0,
       createdAt: r.created_at
     }));
+
+    // Overwrite local storage attempts for this room with authoritative Neon records
+    const allLocal = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
+    const otherRoomsAttempts = allLocal.filter(a => (a.roomCode || '').toUpperCase() !== roomCode.toUpperCase());
+    const updatedAll = [...otherRoomsAttempts, ...neonAttempts];
+    localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(updatedAll));
+    console.log(`📡 Pulled ${neonAttempts.length} attempts from Neon for room ${roomCode} (total: ${updatedAll.length})`);
+    return neonAttempts;
   } catch (err) {
     console.warn('⚠️ Neon fetch room attempts:', err.message);
     return [];
@@ -279,18 +288,10 @@ export async function loginStudent(roomCode = '', studentId = '', username = '')
     `.catch((err) => console.warn('Neon profile sync:', err.message));
   }
 
-  // 🔥 Fetch ALL attempts for this room from Neon & merge into localStorage
+  // 🔥 Fetch ALL attempts for this room from Neon & sync into localStorage
   if (isNeonConfigured && neonSql) {
     try {
-      const neonAttempts = await fetchRoomAttemptsFromNeon(room.code);
-      if (neonAttempts.length > 0) {
-        const existingAttempts = JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
-        const existingIds = new Set(existingAttempts.map(a => a.id));
-        const newFromNeon = neonAttempts.filter(a => !existingIds.has(a.id));
-        const merged = [...existingAttempts, ...newFromNeon];
-        localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(merged));
-        console.log(`📡 Pulled ${newFromNeon.length} attempts from Neon for room ${room.code} (total: ${merged.length})`);
-      }
+      await syncRoomAttemptsFromNeon(room.code);
     } catch (err) {
       console.warn('⚠️ Neon fetch on login:', err.message);
     }
