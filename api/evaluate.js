@@ -18,12 +18,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const BASE_URL = process.env.VITE_DEEPSEEK_BASE_URL || process.env.DEEPSEEK_BASE_URL || process.env.VITE_KKU_BASE_URL || process.env.KKU_BASE_URL || 'https://api.deepseek.com';
-  const API_KEY = process.env.VITE_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY || process.env.VITE_KKU_API_KEY || process.env.KKU_API_KEY;
-  const MODEL = process.env.VITE_DEEPSEEK_MODEL || process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+  const BASE_URL = process.env.DEEPSEEK_BASE_URL || process.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+  const API_KEY = process.env.DEEPSEEK_API_KEY || process.env.VITE_DEEPSEEK_API_KEY;
+  const MODEL = process.env.DEEPSEEK_MODEL || process.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat';
 
   if (!API_KEY) {
-    return res.status(500).json({ error: 'API_KEY not configured on server (.env.local or environment variable missing)' });
+    return res.status(500).json({ error: 'DEEPSEEK_API_KEY not configured on server. Please set DEEPSEEK_API_KEY in Vercel Environment Variables.' });
   }
 
   try {
