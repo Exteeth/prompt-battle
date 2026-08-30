@@ -1,5 +1,5 @@
-  // Vercel Serverless Function — KKU API Proxy
-// Frontend calls /api/evaluate → this function calls KKU API
+// Vercel Serverless Function — DeepSeek API Proxy
+// Frontend calls /api/evaluate → this function calls DeepSeek API directly
 
 export default async function handler(req, res) {
   // CORS & Cache-Control headers (Direct server-to-server, no cookies, no cache)
@@ -18,12 +18,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const KKU_BASE_URL = process.env.VITE_KKU_BASE_URL || process.env.KKU_BASE_URL || 'https://gen.ai.kku.ac.th/api/v1';
-  const KKU_API_KEY = process.env.VITE_KKU_API_KEY || process.env.KKU_API_KEY;
-  const KKU_MODEL = 'deepseek-v4-flash';
+  const BASE_URL = process.env.VITE_DEEPSEEK_BASE_URL || process.env.DEEPSEEK_BASE_URL || process.env.VITE_KKU_BASE_URL || process.env.KKU_BASE_URL || 'https://api.deepseek.com';
+  const API_KEY = process.env.VITE_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY || process.env.VITE_KKU_API_KEY || process.env.KKU_API_KEY;
+  const MODEL = process.env.VITE_DEEPSEEK_MODEL || process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 
-  if (!KKU_API_KEY) {
-    return res.status(500).json({ error: 'KKU_API_KEY not configured on server (.env.local or environment variable missing)' });
+  if (!API_KEY) {
+    return res.status(500).json({ error: 'API_KEY not configured on server (.env.local or environment variable missing)' });
   }
 
   try {
@@ -32,14 +32,19 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    const response = await fetch(`${KKU_BASE_URL}/chat/completions`, {
+    const cleanBaseUrl = BASE_URL.replace(/\/+$/, '');
+    const endpoint = cleanBaseUrl.endsWith('/chat/completions')
+      ? cleanBaseUrl
+      : (cleanBaseUrl.endsWith('/v1') ? `${cleanBaseUrl}/chat/completions` : `${cleanBaseUrl}/chat/completions`);
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KKU_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: KKU_MODEL,
+        model: MODEL,
         messages: [{ role: 'user', content: systemPrompt }]
       }),
       signal: controller.signal
@@ -49,7 +54,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errText = await response.text().catch(() => '');
-      return res.status(response.status).json({ error: `KKU API ${response.status}: ${errText.slice(0, 200)}` });
+      return res.status(response.status).json({ error: `DeepSeek API ${response.status}: ${errText.slice(0, 200)}` });
     }
 
     const data = await response.json();
