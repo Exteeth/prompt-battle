@@ -341,7 +341,7 @@ export default function Home() {
                 <div>
                   <label className="text-xs font-bold text-[#047857] block mb-1 flex items-center gap-1">
                     <Lock size={14} />
-                    รหัส PIN ครู (Default: 1234)
+                    รหัส PIN ครู
                   </label>
                   <input
                     type="password"

@@ -2,10 +2,13 @@
 // Frontend calls /api/evaluate → this function calls KKU API
 
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS & Cache-Control headers (Direct server-to-server, no cookies, no cache)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
