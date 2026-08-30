@@ -92,8 +92,8 @@ export default function TeacherDashboard() {
   };
 
   const handleExportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Rank,Student ID,Username,Stages Completed,Total Points,Stage Scores\n";
+    let csvString = "\uFEFF"; // UTF-8 Byte Order Mark (BOM) for Thai Windows Excel
+    csvString += "Rank,Student ID,Username,Stages Completed,Total Points,Stage Scores\n";
 
     studentDetailed.forEach((student, i) => {
       const stageScoreSummary = STAGES_DATA.map(s => {
@@ -101,32 +101,34 @@ export default function TeacherDashboard() {
         return `Stage ${s.stage_number}: ${scoreObj ? scoreObj.totalScore : 0}`;
       }).join(" | ");
 
-      csvContent += `${i + 1},"${student.studentId || ''}","${student.username}",${student.stagesCompleted},${student.totalPoints},"${stageScoreSummary}"\n`;
+      csvString += `${i + 1},"${student.studentId || ''}","${student.username}",${student.stagesCompleted},${student.totalPoints},"${stageScoreSummary}"\n`;
     });
 
     // Append Satisfaction Survey Summary to CSV
-    csvContent += "\n\n=== STUDENT SATISFACTION SURVEY REPORT ===\n";
-    csvContent += `Total Evaluations Submitted,${evalData.totalEvaluations}\n`;
-    csvContent += `Overall Average Satisfaction Score (out of 5.00),${evalData.overallAvg}\n`;
-    csvContent += `Category 1 (Learning Content & Tasks),${evalData.categoryAvg.cat1}\n`;
-    csvContent += `Category 2 (Game Design & Usability),${evalData.categoryAvg.cat2}\n`;
-    csvContent += `Category 3 (Evaluation & AI Feedback),${evalData.categoryAvg.cat3}\n`;
-    csvContent += `Category 4 (Perceived Benefits),${evalData.categoryAvg.cat4}\n\n`;
+    csvString += "\n\n=== STUDENT SATISFACTION SURVEY REPORT ===\n";
+    csvString += `Total Evaluations Submitted,${evalData.totalEvaluations}\n`;
+    csvString += `Overall Average Satisfaction Score (out of 5.00),${evalData.overallAvg}\n`;
+    csvString += `Category 1 (Learning Content & Tasks),${evalData.categoryAvg.cat1}\n`;
+    csvString += `Category 2 (Game Design & Usability),${evalData.categoryAvg.cat2}\n`;
+    csvString += `Category 3 (Evaluation & AI Feedback),${evalData.categoryAvg.cat3}\n`;
+    csvString += `Category 4 (Perceived Benefits),${evalData.categoryAvg.cat4}\n\n`;
 
-    csvContent += "Student Individual Evaluation List\n";
-    csvContent += "Student ID,Username,Average Rating (out of 5.00),Comment/Suggestion,Date Submitted\n";
+    csvString += "Student Individual Evaluation List\n";
+    csvString += "Student ID,Username,Average Rating (out of 5.00),Comment/Suggestion,Date Submitted\n";
     (evalData.studentEvaluations || evalData.commentsList || []).forEach(c => {
       const commentText = c.comments && c.comments.trim() ? c.comments.replace(/"/g, '""') : '(ไม่ได้ระบุข้อเสนอแนะเพิ่มเติม)';
-      csvContent += `"${c.studentId || ''}","${c.username}",${c.studentAvg},"${commentText}","${c.createdAt}"\n`;
+      csvString += `"${c.studentId || ''}","${c.username}",${c.studentAvg},"${commentText}","${c.createdAt}"\n`;
     });
 
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `Prompt_Battle_Full_Report_${user.roomCode}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (

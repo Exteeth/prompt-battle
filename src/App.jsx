@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import Home from './pages/Home';
 import StageList from './pages/StageList';
@@ -18,38 +19,40 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/stages" element={
-            <ProtectedRoute>
-              <StageList />
-            </ProtectedRoute>
-          } />
-          <Route path="/play/:stageId" element={
-            <ProtectedRoute>
-              <PlayStage />
-            </ProtectedRoute>
-          } />
-          <Route path="/leaderboard" element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/evaluation" element={
-            <ProtectedRoute>
-              <Evaluation />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher" element={
-            <ProtectedRoute>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/stages" element={
+              <ProtectedRoute>
+                <StageList />
+              </ProtectedRoute>
+            } />
+            <Route path="/play/:stageId" element={
+              <ProtectedRoute>
+                <PlayStage />
+              </ProtectedRoute>
+            } />
+            <Route path="/leaderboard" element={
+              <ProtectedRoute>
+                <Leaderboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/evaluation" element={
+              <ProtectedRoute>
+                <Evaluation />
+              </ProtectedRoute>
+            } />
+            <Route path="/teacher" element={
+              <ProtectedRoute>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
