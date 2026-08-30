@@ -4,16 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { getTeacherAnalytics, getStudentDetailedScores, getAllRooms, createRoom, deleteRoom, getRoomEvaluationAnalytics } from '../lib/sessionStorage';
 import { STAGES_DATA } from '../data/stagesData';
-import { Download, LogOut, Users, BarChart3, Sparkles, ChevronDown, ChevronUp, User, Award, CheckCircle, ShieldCheck, Plus, X, School, KeyRound, Check, Trash2, Star, MessageSquare, PieChart } from 'lucide-react';
+import { Download, LogOut, Users, BarChart3, Sparkles, ChevronDown, ChevronUp, User, Award, CheckCircle, ShieldCheck, Plus, X, School, KeyRound, Check, Trash2, Star, MessageSquare, PieChart, TrendingUp } from 'lucide-react';
 
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import ShinyText from '../components/reactbits/ShinyText';
 import ParticlesBg from '../components/reactbits/ParticlesBg';
+import BeforeAfterModal from '../components/BeforeAfterModal';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
   const { user, logout, loginTeacher } = useAuth();
   const [expandedStudentId, setExpandedStudentId] = useState(null);
+  const [selectedGrowthAttempts, setSelectedGrowthAttempts] = useState(null);
 
   // Room Management State
   const [roomsList, setRoomsList] = useState(() => getAllRooms());
@@ -314,24 +316,39 @@ export default function TeacherDashboard() {
                               {STAGES_DATA.map(st => {
                                 const scoreObj = student.stages[st.id];
                                 const isPassed = scoreObj && scoreObj.totalScore >= 12;
+                                const studentAttempts = scoreObj?.attempts || [];
+                                const hasMultipleAttempts = studentAttempts.length >= 2;
 
                                 return (
                                   <div
                                     key={st.id}
-                                    className={`p-3 rounded-2xl border text-xs space-y-1.5 ${
+                                    className={`p-3 rounded-2xl border text-xs space-y-1.5 flex flex-col justify-between ${
                                       isPassed
                                         ? 'bg-white border-[#00B894]/30 shadow-xs'
                                         : 'bg-white/50 border-black/5 opacity-70'
                                     }`}
                                   >
-                                    <div className="flex items-center justify-between font-mono">
-                                      <span className="text-[11px] font-bold text-[#6D28D9]">STAGE {st.stage_number}</span>
-                                      {isPassed && <CheckCircle size={14} className="text-[#00B894]" />}
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center justify-between font-mono">
+                                        <span className="text-[11px] font-bold text-[#6D28D9]">STAGE {st.stage_number}</span>
+                                        {isPassed && <CheckCircle size={14} className="text-[#00B894]" />}
+                                      </div>
+                                      <h5 className="font-bold text-[#1A1525] line-clamp-1 font-kanit text-[11px]">{st.title}</h5>
+                                      <div className="font-mono font-extrabold text-[#047857]">
+                                        {scoreObj ? `${scoreObj.totalScore}/20 PTS` : 'ยังไม่ได้เล่น'}
+                                      </div>
                                     </div>
-                                    <h5 className="font-bold text-[#1A1525] line-clamp-1 font-kanit text-[11px]">{st.title}</h5>
-                                    <div className="font-mono font-extrabold text-[#047857]">
-                                      {scoreObj ? `${scoreObj.totalScore}/20 PTS` : 'ยังไม่ได้เล่น'}
-                                    </div>
+
+                                    {hasMultipleAttempts && (
+                                      <button
+                                        onClick={() => setSelectedGrowthAttempts(studentAttempts)}
+                                        className="w-full mt-2 min-h-[28px] px-2 py-1 bg-[#7C3AED]/10 hover:bg-[#7C3AED]/20 border border-[#7C3AED]/20 text-[#6D28D9] rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 font-prompt"
+                                        title="เปรียบเทียบพัฒนาการ Prompt ครั้งแรกกับครั้งล่าสุดของนักเรียนคนนี้"
+                                      >
+                                        <TrendingUp size={12} />
+                                        <span>ดู Growth ({studentAttempts.length} ครั้ง)</span>
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -674,6 +691,12 @@ export default function TeacherDashboard() {
           </div>
         )}
       </AnimatePresence>
+      {/* Growth Comparison Modal for Teacher */}
+      <BeforeAfterModal
+        attempts={selectedGrowthAttempts}
+        isOpen={Boolean(selectedGrowthAttempts)}
+        onClose={() => setSelectedGrowthAttempts(null)}
+      />
     </div>
   );
 }

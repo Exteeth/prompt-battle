@@ -62,17 +62,21 @@ export default function ChatHeader({
 
       {/* Right section: Badges & Action Buttons */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 font-mono">
-        {hasMultipleAttempts && (
-          <button
-            onClick={onOpenCompare}
-            aria-label="เปรียบเทียบพัฒนาการ Prompt ครั้งแรกกับครั้งล่าสุด"
-            className="min-h-[44px] px-2.5 sm:px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200/80 text-blue-700 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer font-prompt shadow-xs"
-            title="ดูการเติบโตระหว่าง Prompt ครั้งแรก กับ ครั้งล่าสุด"
-          >
-            <GitCompare size={15} aria-hidden="true" />
-            <span className="hidden md:inline font-sans">เปรียบเทียบ Growth</span>
-          </button>
-        )}
+        <button
+          onClick={() => {
+            if (hasMultipleAttempts) {
+              onOpenCompare();
+            } else {
+              alert('กรุณาส่งงานอย่างน้อย 2 ครั้งขึ้นไปในด่านนี้ เพื่อเปรียบเทียบพัฒนาการ (Growth Comparison) ระหว่างครั้งแรกกับครั้งล่าสุดครับ!');
+            }
+          }}
+          aria-label="เปรียบเทียบพัฒนาการ Prompt ครั้งแรกกับครั้งล่าสุด"
+          className="min-h-[44px] px-2.5 sm:px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200/80 text-blue-700 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer font-prompt shadow-xs active:scale-95"
+          title="ดูการเติบโตระหว่าง Prompt ครั้งแรก กับ ครั้งล่าสุด"
+        >
+          <GitCompare size={15} aria-hidden="true" />
+          <span className="hidden md:inline font-sans">เปรียบเทียบ Growth</span>
+        </button>
 
         {/* Highest Score Badge */}
         <div className="px-2.5 sm:px-3 py-1.5 bg-amber-50 border-2 border-amber-200/80 text-amber-800 rounded-2xl text-xs font-semibold flex items-center gap-1 shadow-xs">

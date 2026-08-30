@@ -1,13 +1,18 @@
 import React from 'react';
 import { X, TrendingUp, Sparkles, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 
-export default function BeforeAfterModal({ attempts, isOpen, onClose }) {
+export default function BeforeAfterModal({ attempts = [], isOpen, onClose }) {
   if (!isOpen || !attempts || attempts.length < 2) return null;
 
-  const firstAttempt = attempts[0];
-  const lastAttempt = attempts[attempts.length - 1];
-  const scoreGrowth = (lastAttempt.totalScore - firstAttempt.totalScore).toFixed(1);
-  const isPositiveGrowth = parseFloat(scoreGrowth) >= 0;
+  const sorted = [...attempts].sort((a, b) => (a.attemptNumber || 0) - (b.attemptNumber || 0));
+  const firstAttempt = sorted[0];
+  const lastAttempt = sorted[sorted.length - 1];
+
+  const firstScore = Number(firstAttempt?.totalScore) || 0;
+  const lastScore = Number(lastAttempt?.totalScore) || 0;
+  const growthNum = lastScore - firstScore;
+  const scoreGrowth = (growthNum > 0 ? `+${growthNum.toFixed(1)}` : growthNum.toFixed(1));
+  const isPositiveGrowth = growthNum >= 0;
 
   return (
     <div
