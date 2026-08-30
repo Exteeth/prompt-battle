@@ -245,14 +245,14 @@ function evaluateWithHeuristics(promptText, stage) {
 
     const isThaiHomeRowMash = /^[ฟหกดาสเุ้่ึะัผปมยลรนงพทมัก\s]+$/i.test(cleanContent) && cleanContent.length > 5;
     if (isThaiHomeRowMash) {
-      const meaningfulThaiWords = /(ช่วย|สรุป|เขียน|สร้าง|อธิบาย|แปล|วิเคราะห์|ออกแบบ|คำนวณ|บอก|แนะนำ|เสนอ|ข้อ|ตาราง|เด็ก|ครู|ข่าว|ประเด็น|รายการ|แนวทาง|ไอเดีย|บทบาท|บริบท|เงื่อนไข|รูปแบบ|ภาษา|ย่อหน้า|โลกร้อน|ความยาว|คำ|คีย์เวิร์ด|ผู้บริหาร|โรงเรียน|กิจกรรม|พลังงาน|งบประมาณ|แก้|โจทย์|ขั้นตอน|แสดง|วิธี|ผล|ขาย|ซื้อ|คะแนน|เกรด|ฟังก์ชัน|คลิป|สคริปต์|โทน|ฉาก|กลยุทธ์|แผน|เปิดตัว|จง)/;
+      const meaningfulThaiWords = /(ช่วย|สรุป|เขียน|สร้าง|อธิบาย|แปล|วิเคราะห์|ออกแบบ|คำนวณ|บอก|แนะนำ|เสนอ|ข้อ|ตาราง|เด็ก|ครู|ข่าว|ประเด็น|รายการ|แนวทาง|ไอเดีย|บทบาท|บริบท|เงื่อนไข|รูปแบบ|ภาษา|ย่อหน้า|โลกร้อน|ความยาว|คำ|คีย์เวิร์ด|ผู้บริหาร|โรงเรียน|กิจกรรม|พลังงาน|งบประมาณ|แก้|โจทย์|ขั้นตอน|แสดง|วิธี|ผล|ขาย|ซื้อ|คะแนน|เกรด|ฟังก์ชัน|คลิป|สคริปต์|โทน|ฉาก|กลยุทธ์|แผน|เปิดตัว|จง|เปรียบเทียบ|เปรียบ|เทียบ|เติบโต|การเติบโต|เติบ|โซลาร์|เซลล์|ข้อดี|ข้อเสีย|จุดแข็ง|จุดอ่อน|โอกาส|อุปสรรค|ธุรกิจ|ยอดขาย|รายได้|ลูกค้า|กำไร|องค์กร|ประสิทธิภาพ)/i;
       if (!meaningfulThaiWords.test(cleanContent)) return true;
     }
 
     // Check if clean content has no real meaningful Thai or English words
     const hasThai = /[\u0E00-\u0E7F]/.test(cleanContent);
-    const hasMeaningfulThai = /(ช่วย|สรุป|เขียน|สร้าง|อธิบาย|แปล|วิเคราะห์|ออกแบบ|คำนวณ|บอก|แนะนำ|เสนอ|ข้อ|ตาราง|เด็ก|ครู|ข่าว|ประเด็น|รายการ|แนวทาง|ไอเดีย|บทบาท|บริบท|เงื่อนไข|รูปแบบ|ภาษา|ย่อหน้า|โลกร้อน|ความยาว|คำ|คีย์เวิร์ด|ผู้บริหาร|โรงเรียน|กิจกรรม|พลังงาน|งบประมาณ|แก้|โจทย์|ขั้นตอน|แสดง|วิธี|ผล|ขาย|ซื้อ|คะแนน|เกรด|ฟังก์ชัน|คลิป|สคริปต์|โทน|ฉาก|กลยุทธ์|แผน|เปิดตัว|จง)/.test(cleanContent);
-    const hasMeaningfulEng = /\b(ai|prompt|role|task|context|act|as|you|are|help|summarize|write|create|list|bullet|point|words|key|python|function|type|hint|test|unit|docstring|code|step|format|output|table|markdown|column)\b/i.test(cleanContent);
+    const hasMeaningfulThai = /(ช่วย|สรุป|เขียน|สร้าง|อธิบาย|แปล|วิเคราะห์|ออกแบบ|คำนวณ|บอก|แนะนำ|เสนอ|ข้อ|ตาราง|เด็ก|ครู|ข่าว|ประเด็น|รายการ|แนวทาง|ไอเดีย|บทบาท|บริบท|เงื่อนไข|รูปแบบ|ภาษา|ย่อหน้า|โลกร้อน|ความยาว|คำ|คีย์เวิร์ด|ผู้บริหาร|โรงเรียน|กิจกรรม|พลังงาน|งบประมาณ|แก้|โจทย์|ขั้นตอน|แสดง|วิธี|ผล|ขาย|ซื้อ|คะแนน|เกรด|ฟังก์ชัน|คลิป|สคริปต์|โทน|ฉาก|กลยุทธ์|แผน|เปิดตัว|จง|เปรียบเทียบ|เปรียบ|เทียบ|เติบโต|การเติบโต|เติบ|โซลาร์|เซลล์|ข้อดี|ข้อเสีย|จุดแข็ง|จุดอ่อน|โอกาส|อุปสรรค|ธุรกิจ|ยอดขาย|รายได้|ลูกค้า|กำไร|องค์กร|ประสิทธิภาพ)/i.test(cleanContent);
+    const hasMeaningfulEng = /\b(ai|prompt|role|task|context|act|as|you|are|help|summarize|write|create|list|bullet|point|words|key|python|function|type|hint|test|unit|docstring|code|step|format|output|table|markdown|column|growth|compare|comparison|vs|rate|solar|wind|power|energy|script|tiktok|cmo|swot|persona)\b/i.test(cleanContent);
 
     if (hasThai && !hasMeaningfulThai && cleanContent.length > 5) return true;
     if (!hasThai && !hasMeaningfulEng && cleanContent.length > 5) return true;
