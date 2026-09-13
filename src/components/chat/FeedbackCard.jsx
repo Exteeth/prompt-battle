@@ -1,8 +1,26 @@
 import React from 'react';
-import { Award, CheckCircle2, AlertCircle, Lightbulb, Star } from 'lucide-react';
+import { Award, CheckCircle2, AlertCircle, Lightbulb, Star, ShieldCheck } from 'lucide-react';
 
-export default function FeedbackCard({ scores, totalScore, maxScore = 20, feedback, attemptNumber }) {
+export default function FeedbackCard({
+  scores = {},
+  criteria_feedback = {},
+  totalScore = 0,
+  maxScore = 20,
+  feedback = {},
+  attemptNumber = 1
+}) {
   const scorePercent = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+
+  const clarityScore = scores.clarity ?? 0;
+  const roleScore = scores.role ?? scores.technique ?? 0;
+  const constraintsScore = scores.constraints ?? scores.completeness ?? 0;
+  const outputScore = scores.output_format ?? scores.quality ?? 0;
+
+  // Extract per-criterion feedback with safe fallbacks
+  const clarityFb = criteria_feedback?.clarity || (clarityScore >= 4 ? 'คำสั่งชัดเจน ตรงเป้าหมาย 100%' : 'คำสั่งยังไม่ชัดเจน หรือกว้างเกินไป ควรระบุวัตถุประสงค์งานให้เจาะจง');
+  const roleFb = criteria_feedback?.role || (roleScore >= 4 ? 'กำหนดบทบาทได้สอดคล้องเหมาะสม' : 'ยังไม่ได้กำหนดบทบาทให้ AI ควรสวมบทบาทด้วย "คุณคือ..." หรือ "ในฐานะ..."');
+  const constraintsFb = criteria_feedback?.constraints || (constraintsScore >= 4 ? 'ระบุบริบทและเงื่อนไขประจำด่านครบถ้วน' : 'ยังขาดเงื่อนไขสำคัญตามที่โจทย์กำหนด');
+  const outputFb = criteria_feedback?.output_format || (outputScore >= 4 ? 'กำหนดรูปแบบโครงสร้างผลลัพธ์ชัดเจน' : 'ยังไม่ได้ระบุรูปแบบผลลัพธ์ (เช่น สรุปเป็น Bullet points หรือ ตาราง)');
 
   const getRatingStars = (pct) => {
     let count = 1;
@@ -37,7 +55,7 @@ export default function FeedbackCard({ scores, totalScore, maxScore = 20, feedba
               <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-kanit">ผลการประเมิน (Attempt {attemptNumber})</h3>
               {getRatingStars(scorePercent)}
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5 font-prompt">คำนวณจากเกณฑ์ประเมิน 4 ด้าน รวมเต็ม {maxScore} คะแนน</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 font-prompt">ประเมินเจาะจง 4 มิติ รวมเต็ม {maxScore} คะแนน</p>
           </div>
         </div>
 
@@ -48,77 +66,116 @@ export default function FeedbackCard({ scores, totalScore, maxScore = 20, feedba
         </div>
       </div>
 
-      {/* 4 Criteria Progress Bars with dynamic color */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1 font-prompt">
-        <ScoreBar label="ความชัดเจน (Clarity)" score={scores.clarity} max={5} />
-        <ScoreBar label="ความครบถ้วน (Completeness)" score={scores.completeness} max={5} />
-        <ScoreBar label="เทคนิค Prompt (Technique)" score={scores.technique} max={5} />
-        <ScoreBar label="คุณภาพผลลัพธ์ (Quality)" score={scores.quality} max={5} />
+      {/* 4 Detailed Criteria Progress Cards with Direct Reason & Missing Point */}
+      <div className="space-y-3 font-prompt">
+        <CriterionCard
+          number="1"
+          label="ความชัดเจนของคำสั่ง (Clarity)"
+          score={clarityScore}
+          max={5}
+          feedback={clarityFb}
+        />
+        <CriterionCard
+          number="2"
+          label="การกำหนดบทบาท (Role Assignment)"
+          score={roleScore}
+          max={5}
+          feedback={roleFb}
+        />
+        <CriterionCard
+          number="3"
+          label="บริบทและเงื่อนไข (Context & Constraints)"
+          score={constraintsScore}
+          max={5}
+          feedback={constraintsFb}
+        />
+        <CriterionCard
+          number="4"
+          label="รูปแบบผลลัพธ์ (Output Specification)"
+          score={outputScore}
+          max={5}
+          feedback={outputFb}
+        />
       </div>
 
-      {/* Thai Coaching Feedback Sections */}
-      <div className="space-y-2.5 pt-2 border-t-2 border-slate-100 font-prompt">
-        {feedback.what_worked && (
-          <div className="flex items-start gap-2.5 text-xs sm:text-sm text-emerald-900 bg-emerald-50/80 p-3 rounded-2xl border-2 border-emerald-200/80 animate-slide-up shadow-xs">
-            <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+      {/* Coaching Suggestion Box */}
+      {feedback.suggestion && (
+        <div className="pt-2 border-t-2 border-slate-100 font-prompt">
+          <div className="flex items-start gap-2.5 text-xs sm:text-sm text-sky-950 bg-sky-50/90 p-3 rounded-2xl border-2 border-sky-200/80 animate-slide-up shadow-xs">
+            <Lightbulb size={17} className="text-sky-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="font-bold block text-emerald-800 font-kanit">สิ่งที่ทำได้ดี:</strong>
-              <p className="mt-0.5 text-emerald-950 leading-relaxed font-prompt">{feedback.what_worked}</p>
+              <strong className="font-bold block text-sky-800 font-kanit">คำแนะนำจากโค้ช AI (เพื่อพัฒนาในครั้งต่อไป):</strong>
+              <p className="mt-0.5 text-sky-900 leading-relaxed font-prompt">{feedback.suggestion}</p>
             </div>
           </div>
-        )}
-
-        {feedback.what_missing && (
-          <div className="flex items-start gap-2.5 text-xs sm:text-sm text-amber-900 bg-amber-50/80 p-3 rounded-2xl border-2 border-amber-200/80 animate-slide-up shadow-xs">
-            <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <strong className="font-bold block text-amber-800 font-kanit">จุดที่ยังขาด/ควรเพิ่ม:</strong>
-              <p className="mt-0.5 text-amber-950 leading-relaxed font-prompt">{feedback.what_missing}</p>
-            </div>
-          </div>
-        )}
-
-        {feedback.suggestion && (
-          <div className="flex items-start gap-2.5 text-xs sm:text-sm text-sky-900 bg-sky-50/80 p-3 rounded-2xl border-2 border-sky-200/80 animate-slide-up shadow-xs">
-            <Lightbulb size={16} className="text-sky-600 shrink-0 mt-0.5" />
-            <div>
-              <strong className="font-bold block text-sky-800 font-kanit">คำแนะนำสไตล์โค้ชชิ่ง (เพื่อปรับปรุงครั้งต่อไป):</strong>
-              <p className="mt-0.5 text-sky-950 leading-relaxed font-prompt">{feedback.suggestion}</p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function ScoreBar({ label, score, max }) {
+function CriterionCard({ number, label, score, max = 5, feedback }) {
   const percentage = max > 0 ? (score / max) * 100 : 0;
+  const isPerfect = score === max;
+  const isGood = score >= 3;
 
-  // Dynamic bar color by score tier: ≥80% emerald, 60-79% amber, <60% rose
-  const barColor = percentage >= 80
+  // Dynamic colors based on score
+  const barColor = isPerfect
     ? 'bg-emerald-500'
-    : percentage >= 60
+    : isGood
     ? 'bg-amber-500'
     : 'bg-rose-500';
-  const scoreColor = percentage >= 80
+
+  const scoreTextColor = isPerfect
     ? 'text-emerald-700'
-    : percentage >= 60
+    : isGood
     ? 'text-amber-700'
     : 'text-rose-700';
 
+  const boxBg = isPerfect
+    ? 'bg-emerald-50/60 border-emerald-200/80 text-emerald-950'
+    : isGood
+    ? 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+    : 'bg-rose-50/70 border-rose-200/80 text-rose-950';
+
   return (
-    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-      <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1.5 font-mono">
-        <span>{label}</span>
-        <span className={`font-bold ${scoreColor}`}>{score} / {max}</span>
+    <div className="bg-slate-50/90 p-3 sm:p-3.5 rounded-2xl border-2 border-slate-200/80 transition-all hover:border-slate-300 shadow-xs">
+      {/* Top row: Label and Score */}
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center justify-center shrink-0 font-mono">
+            {number}
+          </span>
+          <span className="text-xs sm:text-sm font-bold text-slate-800 font-kanit truncate">
+            {label}
+          </span>
+        </div>
+        <span className={`text-xs sm:text-sm font-black font-mono shrink-0 ${scoreTextColor}`}>
+          {score} / {max}
+        </span>
       </div>
-      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+
+      {/* Progress Bar */}
+      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
         <div
           className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>
+
+      {/* Inline Specific Feedback Badge explaining what was missing or done well */}
+      {feedback && (
+        <div className={`flex items-start gap-1.5 p-2 sm:p-2.5 rounded-xl border text-[11px] sm:text-xs leading-relaxed font-prompt ${boxBg}`}>
+          {isPerfect ? (
+            <CheckCircle2 size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+          ) : isGood ? (
+            <AlertCircle size={14} className="text-amber-600 shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle size={14} className="text-rose-600 shrink-0 mt-0.5" />
+          )}
+          <span className="font-medium">{feedback}</span>
+        </div>
+      )}
     </div>
   );
 }

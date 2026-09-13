@@ -341,7 +341,7 @@ export function logout() {
 // ----------------------------------------------------
 // 2. ATTEMPTS & PROGRESS MANAGEMENT
 // ----------------------------------------------------
-export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores, feedback, totalScore }) {
+export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, scores, criteria_feedback, feedback, totalScore }) {
   const user = getCurrentUser();
   if (!user) return null;
 
@@ -362,6 +362,7 @@ export async function saveAttempt({ stageId, stageNumber, promptText, aiOutput, 
     promptText,
     aiOutput,
     scores,
+    criteria_feedback,
     feedback,
     totalScore,
     createdAt: new Date().toISOString()
@@ -481,23 +482,46 @@ export function getTeacherAnalytics(roomCode) {
   const stageMap = {};
   roomAttempts.forEach(att => {
     if (!stageMap[att.stageId]) {
-      stageMap[att.stageId] = { stageId: att.stageId, stageNumber: att.stageNumber, count: 0, claritySum: 0, completenessSum: 0, techniqueSum: 0, qualitySum: 0, totalScoreSum: 0, students: new Set() };
+      stageMap[att.stageId] = {
+        stageId: att.stageId,
+        stageNumber: att.stageNumber,
+        count: 0,
+        claritySum: 0,
+        roleSum: 0,
+        constraintsSum: 0,
+        outputFormatSum: 0,
+        totalScoreSum: 0,
+        students: new Set()
+      };
     }
     const s = stageMap[att.stageId];
     s.count += 1;
-    s.claritySum += att.scores.clarity;
-    s.completenessSum += att.scores.completeness;
-    s.techniqueSum += att.scores.technique;
-    s.qualitySum += att.scores.quality;
-    s.totalScoreSum += att.totalScore;
+    const c = att.scores?.clarity ?? 0;
+    const r = att.scores?.role ?? att.scores?.technique ?? 0;
+    const con = att.scores?.constraints ?? att.scores?.completeness ?? 0;
+    const o = att.scores?.output_format ?? att.scores?.quality ?? 0;
+
+    s.claritySum += c;
+    s.roleSum += r;
+    s.constraintsSum += con;
+    s.outputFormatSum += o;
+    s.totalScoreSum += (att.totalScore || 0);
     s.students.add(att.userId);
   });
 
   return Object.values(stageMap).map(s => ({
-    stageId: s.stageId, stageNumber: s.stageNumber, studentCount: s.students.size,
-    avgClarity: (s.claritySum / s.count).toFixed(1), avgCompleteness: (s.completenessSum / s.count).toFixed(1),
-    avgTechnique: (s.techniqueSum / s.count).toFixed(1), avgQuality: (s.qualitySum / s.count).toFixed(1),
-    avgTotalScore: (s.totalScoreSum / s.count).toFixed(1)
+    stageId: s.stageId,
+    stageNumber: s.stageNumber,
+    studentCount: s.students.size,
+    avgClarity: (s.claritySum / (s.count || 1)).toFixed(1),
+    avgRole: (s.roleSum / (s.count || 1)).toFixed(1),
+    avgConstraints: (s.constraintsSum / (s.count || 1)).toFixed(1),
+    avgOutputFormat: (s.outputFormatSum / (s.count || 1)).toFixed(1),
+    // Backward compatibility aliases
+    avgCompleteness: (s.constraintsSum / (s.count || 1)).toFixed(1),
+    avgTechnique: (s.roleSum / (s.count || 1)).toFixed(1),
+    avgQuality: (s.outputFormatSum / (s.count || 1)).toFixed(1),
+    avgTotalScore: (s.totalScoreSum / (s.count || 1)).toFixed(1)
   }));
 }
 

@@ -486,3 +486,53 @@ describe('🛡️ Mixed Attack Scenarios', () => {
     expect(result.totalScore).toBeLessThan(14);
   });
 });
+
+// ─────────────────────────────────────────────────────────
+// 10. NEW 5 MAIN BATTLE STAGES & CRITERIA FEEDBACK
+// ─────────────────────────────────────────────────────────
+describe('🎯 5 New Main Battle Stages & Criteria Feedback', () => {
+  it('New Stage 1: CEO 3nm chip summary in 3 mins should score high and have criteria_feedback', { timeout: 20000 }, async () => {
+    const result = await evaluate(
+      'คุณคือผู้ช่วยส่วนตัวของซีอีโอ ซีอีโอกำลังจะขึ้นเวทีแถลงข่าวในอีก 3 นาที จงสรุปเนื้อหาชิป 3nm นี้ให้เป็น Bullet points สั้นกระชับ และสกัด 3-5 คีย์เวิร์ดสำคัญที่จำง่ายไปพูดบนเวที',
+      5
+    );
+    expect(result.totalScore).toBeGreaterThanOrEqual(14);
+    expect(result.criteria_feedback).toBeDefined();
+    expect(result.criteria_feedback.clarity).toBeDefined();
+    expect(result.criteria_feedback.role).toBeDefined();
+    expect(result.criteria_feedback.constraints).toBeDefined();
+    expect(result.criteria_feedback.output_format).toBeDefined();
+  });
+
+  it('New Stage 2: TikTok vertical script 60s 3-columns should score high', { timeout: 20000 }, async () => {
+    const result = await evaluate(
+      'คุณคือครีเอทีฟวิดีโอสั้นของสภานักเรียน ช่วยเขียนบทคลิปแนวตั้ง 60 วินาที เตือนภัยเพื่อนนักเรียนเรื่อง 3 กลโกงออนไลน์ (หลอกเติมเกม, งานกดไลก์, บัญชีเพื่อนปลอม) โทนสนุกสนาน จัดรูปแบบเป็นตาราง 3 คอลัมน์: ภาพ (Visual), เสียงพูด (Audio), ข้อความบนจอ (Text on Screen)',
+      6
+    );
+    expect(result.totalScore).toBeGreaterThanOrEqual(14);
+  });
+
+  it('New Stage 3: English exchange classmate interactive tutor should score high', { timeout: 20000 }, async () => {
+    const result = await evaluate(
+      'คุณคือเพื่อนนักเรียนแลกเปลี่ยนชาวต่างชาติวัยเดียวกันที่นั่งข้างฉันในห้องเรียนช่วงพักกลางวัน คุยสนุกและเป็นกันเอง จงเริ่มทักทายฉันก่อน 1 ประโยคเป็นภาษาอังกฤษ โดยมีกติกาคือ: 1) คุยโต้ตอบทีละ 1 ประโยค 2) ถ้าฉันพิมพ์ผิด ให้ช่วยแนะนำประโยคที่ถูกต้องสั้นๆ แล้วถามคำถามถัดไป',
+      7
+    );
+    expect(result.totalScore).toBeGreaterThanOrEqual(14);
+  });
+
+  it('New Stage 4: Python Gold/Silver points with error handling, type hint, docstring & tests should score high', { timeout: 20000 }, async () => {
+    const result = await evaluate(
+      'คุณคือ Senior Python Developer จงเขียนฟังก์ชัน Python สำหรับคำนวณแต้มกิจกรรมในห้องเรียน กติกา: บัตร Gold คูณ 2 เท่า, บัตร Silver คูณ 1.5 เท่า, บัตรทั่วไปแต้มตามจริง หากคะแนน <= 0 หรือไม่ใช่ตัวเลขให้ Raise ValueError พร้อมใส่ Type Hinting, Docstring ภาษาไทย และเขียนบล็อกโค้ดทดสอบ Test Cases',
+      8
+    );
+    expect(result.totalScore).toBeGreaterThanOrEqual(14);
+  });
+
+  it('New Stage 5: Science detective Children day 15000 budget pitch should score high', { timeout: 20000 }, async () => {
+    const result = await evaluate(
+      'คุณคือผู้เชี่ยวชาญการบริหารโครงการกิจกรรมโรงเรียน จงจัดทำเอกสารข้อเสนอโครงการจัดงานวันเด็กธีม "นักสืบวิทยาศาตร์รุ่นจิ๋ว" ภายใต้งบประมาณ 15,000 บาท เพื่อเสนอผู้อำนวยการโรงเรียนอนุมัติ โดยมีโครงสร้าง: 1) สรุปแนวคิด 2) วิเคราะห์จุดเด่นและจุดที่ต้องระวัง 3) ซุ้มกิจกรรมแยกเด็กประถมและมัธยมต้น 4) ตารางขั้นตอนดำเนินงานพร้อมแจกแจงงบประมาณ',
+      9
+    );
+    expect(result.totalScore).toBeGreaterThanOrEqual(14);
+  });
+});

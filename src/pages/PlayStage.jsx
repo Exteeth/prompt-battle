@@ -13,7 +13,7 @@ import ChatInput from '../components/chat/ChatInput';
 import StageSidebar from '../components/StageSidebar';
 import BeforeAfterModal from '../components/BeforeAfterModal';
 import PromptCheatSheetModal from '../components/PromptCheatSheetModal';
-import { FileText, ChevronDown, ChevronUp, Cpu, BookOpen } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, Cpu, BookOpen, Copy, Check, Target, Paperclip, ListChecks } from 'lucide-react';
 
 export default function PlayStage() {
   const { stageId } = useParams();
@@ -28,6 +28,8 @@ export default function PlayStage() {
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
   const [showCriteriaAccordion, setShowCriteriaAccordion] = useState(true);
+  const [showRubricDetails, setShowRubricDetails] = useState(false);
+  const [copiedAttachment, setCopiedAttachment] = useState(false);
 
   const chatEndRef = useRef(null);
 
@@ -53,11 +55,14 @@ export default function PlayStage() {
         type: 'ai',
         aiOutput: `สวัสดีครับ! ผม **Promptie** ครู AI ประจำด่าน ยินดีต้อนรับสู่ **Stage ${foundStage.stage_number}: ${foundStage.title}**
 
-โจทย์ของคุณในด่านนี้:
+${foundStage.situation ? `🎯 **สถานการณ์:**\n${foundStage.situation}\n\n` : ''}📌 **ภารกิจของคุณในด่านนี้:**
 ${foundStage.problem_statement}
 
-สิ่งที่ระบบคาดหวังใน Prompt ของคุณ:
-${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).join('\n')}
+เกณฑ์ที่ระบบจะประเมินใน Prompt ของคุณ (4 ด้าน รวม 20 คะแนน):
+1. ความชัดเจนของคำสั่ง (Clarity - 5 คะแนน)
+2. การกำหนดบทบาท (Role Assignment - 5 คะแนน)
+3. บริบทและเงื่อนไข (Context & Constraints - 5 คะแนน)
+4. รูปแบบผลลัพธ์ (Output Specification - 5 คะแนน)
 
 พิมพ์ Prompt คำสั่งของคุณด้านล่าง แล้วส่งให้ผมประเมินได้เลยครับ (คุณมีโควต้า 3 ครั้งต่อด่าน)!`,
         isSystem: true
@@ -76,6 +81,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         type: 'ai',
         aiOutput: att.aiOutput,
         scores: att.scores,
+        criteria_feedback: att.criteria_feedback,
         totalScore: att.totalScore,
         feedback: att.feedback,
         attemptNumber: att.attemptNumber
@@ -89,6 +95,13 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  const handleCopyAttachment = (text) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedAttachment(true);
+    setTimeout(() => setCopiedAttachment(false), 2500);
+  };
 
   const handlePromptSubmit = async (promptText) => {
     if (!stage || isLoading) return;
@@ -121,6 +134,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         promptText,
         aiOutput: result.aiOutput,
         scores: result.scores,
+        criteria_feedback: result.criteria_feedback,
         feedback: result.feedback,
         totalScore: result.totalScore
       });
@@ -129,7 +143,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
       const updatedAttempts = [...attempts, savedAttempt];
       setAttempts(updatedAttempts);
 
-      // Add AI response message to UI with maxScore for display
+      // Add AI response message to UI with maxScore & criteria_feedback for display
       setMessages(prev => [
         ...prev,
         {
@@ -137,6 +151,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
           type: 'ai',
           aiOutput: result.aiOutput,
           scores: result.scores,
+          criteria_feedback: result.criteria_feedback,
           totalScore: result.totalScore,
           maxScore: result.maxScore || 20,
           feedback: result.feedback,
@@ -144,8 +159,8 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
         }
       ]);
 
-      // Victory chime & Confetti celebration if high score (≥25/35 ~71%)
-      if (result.totalScore >= 14) {
+      // Victory chime & Confetti celebration if high score (≥15/20 ~75%)
+      if (result.totalScore >= 15) {
         playVictoryChime();
         confetti({
           particleCount: 80,
@@ -203,7 +218,7 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
                 className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-blue-700 transition-colors min-h-[36px] cursor-pointer"
               >
                 <FileText size={16} className="text-blue-600 shrink-0" />
-                <span className="truncate">คำอธิบายโจทย์ & เงื่อนไขบังคับ</span>
+                <span className="truncate">ข้อมูลภารกิจ & เอกสารแนบ</span>
                 {showCriteriaAccordion ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
 
@@ -218,19 +233,92 @@ ${Object.values(foundStage.expected_criteria).map((c, i) => `${i + 1}. ${c}`).jo
             </div>
 
             {showCriteriaAccordion && (
-              <div className="mt-2.5 p-3.5 bg-slate-50/80 rounded-3xl border-2 border-slate-200/80 space-y-2 text-xs text-slate-700 animate-slide-up shadow-xs">
-                <p className="font-medium text-slate-900 whitespace-pre-wrap leading-relaxed">
-                  {stage.problem_statement}
-                </p>
+              <div className="mt-2.5 p-3.5 sm:p-4 bg-slate-50/90 rounded-3xl border-2 border-slate-200/80 space-y-3 text-xs text-slate-700 animate-slide-up shadow-xs">
+                {/* Situation */}
+                {stage.situation && (
+                  <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-200/80">
+                    <div className="flex items-center gap-1.5 text-blue-900 font-bold mb-1 font-kanit">
+                      <Target size={15} className="text-blue-600" />
+                      <span>สถานการณ์:</span>
+                    </div>
+                    <p className="text-blue-950 leading-relaxed font-prompt">{stage.situation}</p>
+                  </div>
+                )}
 
+                {/* Attached Document / Raw Data */}
+                {stage.attachment && (
+                  <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/80">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 text-amber-900 font-bold font-kanit">
+                        <Paperclip size={15} className="text-amber-700" />
+                        <span>เอกสารแนบ / ข้อมูลดิบสำหรับนำไปใช้:</span>
+                      </div>
+                      <button
+                        onClick={() => handleCopyAttachment(stage.attachment)}
+                        className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[11px] font-bold hover:bg-amber-100 flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                      >
+                        {copiedAttachment ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                        <span>{copiedAttachment ? 'คัดลอกแล้ว!' : 'คัดลอกข้อความ'}</span>
+                      </button>
+                    </div>
+                    <p className="text-amber-950 whitespace-pre-wrap leading-relaxed font-mono text-[11px] bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                      {stage.attachment}
+                    </p>
+                  </div>
+                )}
+
+                {/* Problem Statement */}
+                <div>
+                  <strong className="text-slate-900 block mb-0.5 font-kanit text-xs">คำสั่งโจทย์:</strong>
+                  <p className="font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
+                    {stage.problem_statement}
+                  </p>
+                </div>
+
+                {/* Constraints */}
                 {stage.constraints && stage.constraints.length > 0 && (
                   <div className="pt-2 border-t-2 border-slate-200/80">
-                    <strong className="text-amber-800 block mb-1 font-prompt">เงื่อนไขบังคับ:</strong>
-                    <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                    <strong className="text-rose-800 block mb-1 font-prompt font-bold">เงื่อนไขบังคับประจำด่าน:</strong>
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700">
                       {stage.constraints.map((c, i) => (
                         <li key={i}>{c}</li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {/* Rubric View Toggle */}
+                {stage.detailed_rubric && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <button
+                      onClick={() => setShowRubricDetails(!showRubricDetails)}
+                      className="text-blue-700 font-bold text-[11px] flex items-center gap-1 hover:underline cursor-pointer"
+                    >
+                      <ListChecks size={14} />
+                      <span>{showRubricDetails ? 'ซ่อนเกณฑ์คะแนนละเอียด 4 มิติ' : 'ดูเกณฑ์คะแนนละเอียด 4 มิติ (เต็ม 20 คะแนน)'}</span>
+                      {showRubricDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+
+                    {showRubricDetails && (
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] animate-slide-up">
+                        <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                          <strong className="text-slate-900 block font-bold">1. ความชัดเจน (Clarity - 5 คะแนน)</strong>
+                          <p className="text-slate-600 mt-0.5">{stage.detailed_rubric.clarity?.[5]}</p>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                          <strong className="text-slate-900 block font-bold">2. การกำหนดบทบาท (Role - 5 คะแนน)</strong>
+                          <p className="text-slate-600 mt-0.5">{stage.detailed_rubric.role?.[5]}</p>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                          <strong className="text-slate-900 block font-bold">3. บริบท & เงื่อนไข (Constraints - 5 คะแนน)</strong>
+                          <p className="text-slate-600 mt-0.5">{stage.detailed_rubric.constraints?.[5]}</p>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                          <strong className="text-slate-900 block font-bold">4. รูปแบบผลลัพธ์ (Output Spec - 5 คะแนน)</strong>
+                          <p className="text-slate-600 mt-0.5">{stage.detailed_rubric.output_format?.[5]}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
