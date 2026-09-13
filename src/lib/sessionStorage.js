@@ -201,7 +201,7 @@ async function ensureNeonTables() {
 // ----------------------------------------------------
 export async function syncRoomAttemptsFromNeon(roomCode) {
   if (!isNeonConfigured || !neonSql || !roomCode) return [];
-  try {
+  try { 
     await ensureNeonTables();
     const rows = await neonSql`
       SELECT * FROM attempts
